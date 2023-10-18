@@ -1,0 +1,66 @@
+ 
+void palindrom(){
+    int n;
+    cin>>n;
+    Vector <int> V;
+    for(int i=0;i<n;i++)
+    {   int temp;
+        cin>>temp;
+        V.push_back(temp);
+
+    }
+    int ok=1;
+    for(int i=0;i<V.getSize()/2;i++)
+    {
+        if(V[i]!=V[V.getSize()-i-1]) {
+            cout << "Nu e palindrom\n";
+            ok=0;
+            break;
+        }
+    }
+    if(ok)
+        cout<<"palindrom";
+}
+void crescator(){
+    int n,i;
+    bool ok=1;
+    cin>>n;
+    Vector <int> V;
+    for(i=0;i<n;i++){
+        int temp;
+        cin>>temp;
+       V.push_back(temp);
+    }
+    for(i=0;i<V.getSize()-1;i++){
+        if(V[i]>=V[i+1])
+        {
+            ok=0;
+            break;
+        }
+    }
+    if(ok==1){
+        cout<<"ordonat crescator";
+    }
+    else cout<<"nu este ordonat crescator";
+}
+
+void min_max(){
+    Vector<int> vect;
+    int n;
+    cin >> n;
+    vect.citire_vector(n);
+    vect.min_max();
+}
+void numere_pare (){
+    Vector<int> vect;
+    int n;
+    cin>>n;
+    vect.citire_vector(n);
+    int sum=0;
+    for(int i=0; i<vect.getSize();i++)
+    {
+        if(vect[i]%2==0)
+            sum=sum+vect[i];
+    }
+    cout<<sum;
+}

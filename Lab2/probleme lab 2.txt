@@ -1,0 +1,263 @@
+1.Scrieti un program care citeste n de la tastatura si genereaza un set care contine numerele pare pana la n.
+scrieti o functie care sterge elementele divizibile cu k citit de la tastatura din set si afisati noul set.
+scrieti o functie care verifica daca un numar l este in set, iar daca nu este il va adauga, afisati noul set.
+
+#include <iostream>
+#include <set>
+
+using namespace std;
+
+set<int> generateSetOfEvenNumbers(int n) {
+    set<int> evenNumbers;
+    for (int i = 2; i <= n; i += 2) {
+        evenNumbers.insert(i);
+    }
+    return evenNumbers;
+}
+
+void removeDivisibleElements(set<int>& numbers, int k) {
+    auto it = numbers.begin();
+    while (it != numbers.end()) {
+        if (*it % k == 0) {
+            it = numbers.erase(it);
+        } else {
+            ++it;
+        }
+    }
+}
+
+void checkAndAddElement(set<int>& numbers){
+    int l;
+    cout << "Introduceți un număr l pentru verificare și adăugare: ";
+    cin >> l;
+
+    if (numbers.find(l) == numbers.end()) {
+        numbers.insert(l);
+        cout << "Numărul " << l << " a fost adăugat în set." << endl;
+    } else {
+        cout << "Numărul " << l << " este deja în set." << endl;
+    }
+}
+
+int main() {
+    int n;
+    cout << "Introduceți un număr n: ";
+    cin >> n;
+
+    set<int> evenNumbers = generateSetOfEvenNumbers(n);
+
+    cout << "Setul de numere pare este:" << endl;
+    for (int num : evenNumbers) {
+        cout << num << " ";
+    }
+    cout << endl;
+
+    int k;
+    cout << "Introduceți un număr k pentru ștergere: ";
+    cin >> k;
+
+    removeDivisibleElements(evenNumbers, k);
+
+    cout << "Setul după ștergerea elementelor divizibile este:" << endl;
+    for (int num : evenNumbers) {
+        cout << num << " ";
+    }
+    cout << endl;
+
+    checkAndAddElement(evenNumbers);
+
+    cout << "Setul final este:" << endl;
+    for (int num : evenNumbers) {
+        cout << num << " ";
+    }
+    cout << endl;
+
+    return 0;
+}
+
+
+
+2.Scrieti un program care citeste n si genereaza un vector care contine n numere generate aleatoriu(cu valori intre 1 si n). Afisati pe ecran elementele care apar cel putin o data si separat elementele care apar de mai multe ori.
+Hint: Pentru a genera un numar aleatoriu putem folosi urmatoarea metoda: librariile cstdlib, ctime;
+      Pentru seed folosim doar o data: std::srand(static_cast<unsigned int>(std::time(nullptr)));
+      Pentru a genera un numar aleatoriu: std::rand() % max + min;
+
+
+#include <iostream>
+#include <cstdlib>
+#include <ctime>
+#include <vector>
+#include <set>
+
+using namespace std;
+
+void addRandomNums(vector<int>& vec, int n){
+    std::srand(static_cast<unsigned int>(std::time(nullptr)));
+    for(int i=0; i<n; i++){
+        vec.push_back(rand() & n + 1);
+    }
+}
+
+int main() {
+    vector<int> vec;
+    int n;
+    cout<<"Introduceti n:";
+    cin>>n;
+
+    addRandomNums(vec, n);
+
+    cout<<"Vector with random elements is:\n";
+    for(auto i:vec){
+        cout<<i<<" ";
+    }
+
+    set<int> onlyOnce;
+    set<int> multipleTimes;
+
+    for(auto i:vec){
+        //pentru fiecare element din vector
+        if(multipleTimes.find(i) != multipleTimes.end()){
+            //daca elementul exista deja in setul care contine mai multe elemente
+            //nu mai verificam daca apare doar o data.
+            continue;
+        }
+        if(onlyOnce.find(i) != onlyOnce.end()){
+            //verificam daca exista deja in setul care contine numerele aparute doar o data
+            //daca exista il introducem in setul care contine elementele care apar de mai multe ori
+            multipleTimes.insert(i);
+            //il stergem din setul pentru doar o data.
+            onlyOnce.erase(i);
+        }else{
+            //daca nu exista in setul in care apar doar o data, il vom introduce
+            onlyOnce.insert(i);
+        }
+
+    }
+
+    cout<<"\nNumerele care apar doar o data:\n";
+    for(auto i:onlyOnce){
+        cout<<i<<" ";
+    }
+
+    cout<<"\nElementele care apar de mai multe ori:\n";
+
+    for(auto it=multipleTimes.begin();it!=multipleTimes.end();it++){
+        //putem folosi for la iteratori aici deoarece nu stergem niciun element
+        cout<<*it<<" ";
+    }
+
+    return 0;
+}
+
+
+
+
+3.Scrieti un program care citeste de la tastatura n iar apoi n angati: nume si salariu intr-un map.
+Cititi de la tastatura un nume si apoi stergetil din map.
+Afisati care angajat are cel mai mare si scadetil cu 20%.
+Afisati map-ul final.
+
+#include <iostream>
+#include <map>
+#include <string>
+
+using namespace std;
+
+int main() {
+    map<string, double> angajati;
+    int n;
+    cout << "Numărul de angajați: ";
+    cin >> n;
+    for (int i = 0; i < n; ++i) {
+        string nume;
+        double salariu;
+        cin >> nume;
+        cin >> salariu;
+        angajati[nume] = salariu;
+    }
+
+    cout << "Angajatii initiali:" << endl;
+    map<string, double>::iterator it;
+    for (it = angajati.begin(); it != angajati.end(); ++it) {
+        cout << "Nume: " << it->first << ", Salariu: " << it->second << endl;
+    }
+
+    string numeDeSters;
+    cout << "Introduceți numele angajatului de șters: ";
+    cin >> numeDeSters;
+    angajati.erase(numeDeSters);
+
+    double salariuMaxim= 0; //incepem de la cel mai mic salariu posibil
+    string numeSalariuMaxim;
+
+    for (it = angajati.begin(); it != angajati.end(); ++it) {
+        if (it->second > salariuMaxim) {
+            salariuMaxim = it->second;
+            numeSalariuMaxim = it->first;
+        }
+    }
+
+    if (!numeSalariuMaxim.empty()) {
+        cout<<"Angajatul cu cel mai mare salariu:"<<numeSalariuMaxim<<endl;
+        angajati[numeSalariuMaxim] *= 0.8;
+    }
+
+    cout << "Angajatii finali:" << endl;
+    for (it = angajati.begin(); it != angajati.end(); ++it) {
+        cout << "Nume: " << it->first << ", Salariu: " << it->second << endl;
+    }
+
+    return 0;
+}
+
+
+
+
+4.Scrieți un program care citește o propoziție de la tastatură și apoi primește un număr n pentru a crea un dicționar de traducere. Utilizatorul trebuie să furnizeze n perechi de cuvinte, fiecare formată dintr-un cuvânt original și cuvântul corespunzător tradus. Programul trebuie să traducă propoziția folosind acest dicționar și să afișeze propoziția tradusă.
+
+
+#include <iostream>
+#include <map>
+#include <string>
+#include <sstream>
+
+using namespace std;
+
+int main() {
+    string propozitie;
+    cout << "Introduceti o propozitie: ";
+    getline(cin, propozitie);
+
+    int n;
+    cout << "Introduceti n:";
+    cin >> n;
+
+    cin.ignore();//Uneori trebuie
+
+    map<string, string> dictionar;
+
+    for (int i = 0; i < n; ++i) {
+        string cuvantOriginal, cuvantTradus;
+        cout << "Cuvantul original: ";
+        cin>>cuvantOriginal;
+        cout << "Cuvantul tradus pentru '" << cuvantOriginal << "': ";
+        cin>>cuvantTradus;
+        dictionar[cuvantOriginal] = cuvantTradus;
+    }
+
+    string cuvant;
+    istringstream iss(propozitie); //cu aceasta functie putem sa separam un string in mai multe stringuri dupa spatiu
+    cout << "Propoziția tradusă:";
+    while (iss >> cuvant) {
+        //Pentru fiecare cuvant din propozitie verificam daca se afla in dictionar
+        if (dictionar.find(cuvant) != dictionar.end()) {
+            //daca cuvantul este in dictionar, il afisam pe cel tradus
+            cout << dictionar[cuvant];
+        } else {
+            //daca cuvantul nu este in dictionar afisam originalul
+            cout << cuvant;
+        }
+        cout<<" ";
+    }
+    return 0;
+}

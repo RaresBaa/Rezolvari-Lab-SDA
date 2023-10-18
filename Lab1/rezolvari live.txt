@@ -1,0 +1,158 @@
+Problema 1 rezolvata live:
+#include <iostream>
+#include<list>
+#include<vector>
+using namespace std;
+
+vector <int> divide2( vector <int> n)
+{
+    vector <int> vectornou;
+    for(int i: n)
+    {
+        if(i%2 != 0)
+        {
+            vectornou.push_back(i);
+        }
+    }
+
+    return vectornou;
+
+}
+list <int> divide3(list <int> n)
+{
+    auto it = n.begin();
+    while( it != n.end())
+    {
+        if(*it % 3 == 0)
+        {
+            it = n.erase(it);
+        }
+        else
+            it++;
+    }
+    return n;
+}
+
+int main() {
+    int n;
+    cin>>n;
+    vector <int>vec;
+    list <int>lista;
+    for(int i=0;i<n;i++)
+    {
+        int tmp;
+        cin>>tmp;
+        vec.push_back(tmp);
+        lista.push_back(tmp);
+
+    }
+    list <int> lista2 = divide3(lista);
+
+    vector <int> vector2 =divide2(vec);
+
+    cout<<"vector:";
+    for(int i:vector2){
+        cout<<i<<" ";
+    }
+        cout<<'\n';
+        cout<<"lista:";
+    for(int i:lista2)
+        cout<<i<<" ";
+
+    return 0;
+}
+
+
+
+
+Problema 2 rezolvata live:
+
+/*
+ 2.Fie o lista si un vector care contin o agenda de contacte.
+Creeati o functie care sterge un contact dupa numarul de telefon pentru lista
+si o functie care cauta daca exista un contact in agenda dupa nume
+*/
+
+#include <iostream>
+#include <list>
+#include <vector>
+#include <string>
+
+using namespace std;
+
+
+struct Contact
+{
+    string nume;
+    long int nrT=0;
+
+};
+
+list<Contact> sterge(list<Contact> Agenda , long int tel){
+    auto it = Agenda.begin() ;
+    while(it!=Agenda.end()){
+        if(it->nrT== tel){
+            it=Agenda.erase(it);
+
+        }
+        else{
+            it++;
+        }
+
+    }
+    return Agenda;
+}
+Contact Cautare (vector<Contact> vec , string nume){
+    for (int i=0 ; i< vec.size();++i){
+        if(vec[i].nume == nume ){
+            return vec[i];
+        }
+    }
+    Contact negasit{"nu a fost gasit ", 0 };
+}
+int main(){
+
+    int n;
+    cin>>n;
+
+    vector <Contact> AgendaV;
+    list <Contact> AgendaL;
+
+    for(int i=0; i< n; i++) {
+        Contact tmp;
+        cin >> tmp.nume >> tmp.nrT;
+
+        AgendaL.push_back(tmp);
+        AgendaV.push_back(tmp);
+
+    }
+cout<<"nr_telefon_sters:";
+    long int nr_sters;
+    cin>>nr_sters;
+    list<Contact> Agenda_noua= sterge(AgendaL,nr_sters);
+    cout<<"Lista: ";
+    cout<<endl;
+
+    for(Contact i: Agenda_noua)
+    {
+        cout<<i.nume<<" "<<i.nrT<<endl;
+    }
+    cout<<endl;
+    cout<<"Vector: ";
+    cout<<endl;
+
+    for(Contact i: AgendaV)
+    {
+        cout<<i.nume<<" "<<i.nrT<<endl;
+    }
+
+    cout<<endl;
+    cout<< " nume cautat :";
+    string nume_cautat;
+    cin>> nume_cautat;
+    Contact gasit = Cautare(AgendaV,nume_cautat);
+    cout<<"Contact gasit:"<<gasit.nrT;
+
+
+    return 0;
+}

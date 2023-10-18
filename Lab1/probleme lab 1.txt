@@ -1,0 +1,171 @@
+/*
+ 1.Fie o lista si un vector care contin 10 de elemente de tip int.
+Creati o functie care sterge elementele divizibile cu 3 din lista,
+respectiv o functie pentru a sterge elementele divizibile cu 2 din vector.
+(Hint: pentru a vedea daca un element este divizibil cu 3 puteti folosi: numar % 3 == 0)
+*/
+
+#include <iostream>
+#include <list>
+#include <vector>
+
+using namespace std;
+
+list<int> stergeDivizibileCu3Lista(list<int> lista) {
+    //Aici nu poate fi folosit for(auto it = lista.begin(); it!= lista.end();it++)
+    //deoarece it creste de fiecare data cand trecem prin bucla de for.
+    //it nu trebuie crescut cand stergem un element al listei.
+    auto it = lista.begin();
+    while (it != lista.end()) {
+        if (*it % 3 == 0) {
+            it = lista.erase(it);
+        } else {
+            it++;
+        }
+    }
+    return lista;
+}
+
+void stergeDivizibileCu2Vector(std::vector<int>& vector) {
+    auto it = vector.begin();
+    while (it != vector.end()) {
+        if (*it % 2 == 0) {
+            it = vector.erase(it);
+        } else {
+            ++it;
+        }
+    }
+}
+
+int main() {
+    list<int> lis;
+    vector<int> vec;
+
+    int n;
+    cout<<"Introduceti nr de elemente:";
+    cin>>n;
+    for(int i=0;i<n;i++){
+        int tmp;
+        cin>>tmp;
+        lis.push_back(tmp);
+        vec.push_back(tmp);
+    }
+
+    cout << "Lista initiala: ";
+    for (int num : lis) {
+        cout << num << " ";
+    }
+    cout << endl;
+
+    list<int> lista_noua = stergeDivizibileCu3Lista(lis);
+
+    cout << "Lista dupa stergerea elementelor divizibile cu 3: ";
+    for (int num : lista_noua) {
+        cout << num << " ";
+    }
+    cout << endl;
+
+
+    cout << "Vectorul initial: ";
+    for (int num : vec) {
+        cout << num << " ";
+    }
+    cout << endl;
+
+    stergeDivizibileCu2Vector(vec);
+
+    cout << "Vectorul dupa stergerea elementelor divizibile cu 2: ";
+    for (int num : vec) {
+        cout << num << " ";
+    }
+    cout << endl;
+
+    return 0;
+}
+
+
+
+
+
+
+/*
+ 2.Fie o lista si un vector care contin o agenda de contacte.
+Creeati o functie care sterge un contact dupa numarul de telefon pentru lista
+si o functie care cauta daca exista un contact in agenda dupa nume
+*/
+
+#include <iostream>
+#include <list>
+#include <vector>
+#include <string>
+
+using namespace std;
+
+struct Contact {
+    string nume;
+    long int telefon;
+};
+
+list<Contact> lista_sterge_contact(list<Contact> contacte, long int tel){
+    for(auto i = contacte.begin(); i != contacte.end(); i++){
+        if(i->telefon == tel){
+            i = contacte.erase(i);
+        }
+    }
+    return contacte;
+}
+
+Contact vector_cauta_contact(vector<Contact> contacte, string nume){
+    for(int i = 0; i < contacte.size(); i++){
+        if(contacte[i].nume == nume){
+            return contacte[i];
+        }
+    }
+    //trebuie sa returnam ceva chiar daca nu am gasit niciun contact
+    Contact nimic{"Nu a fost gasit", 0};
+    return nimic;
+}
+
+int main() {
+    list<Contact> listaContacte;
+    vector<Contact> vectorContacte;
+
+    int n;
+    cout<<"Introduceti nr de contacte:";
+    cin>>n;
+    for(int i=0; i<n; i++){
+        Contact tmp;
+        cin>>tmp.nume;
+        cin>>tmp.telefon;
+        listaContacte.push_back(tmp);
+        vectorContacte.push_back(tmp);
+    }
+
+    cout<< "Contactele din lista:\n";
+    for(Contact con : listaContacte){
+        cout<< "\tNume: "<< con.nume<< ", Tel: "<< con.telefon<< endl;
+    }
+
+    cout<<"Introduceti nr de telefon pentru a fi sters:";
+    long int tel;
+    cin>>tel;
+    list<Contact> listaNoua = lista_sterge_contact(listaContacte, tel);
+
+    cout<< "Contactele din lista dupa stergere:\n";
+    for(Contact con : listaNoua){
+        cout<< "\tNume: "<< con.nume<< ", Tel: "<< con.telefon<< endl;
+    }
+
+    cout<< "Contactele din vector:\n";
+    for(Contact con : vectorContacte){
+        cout<< "\tNume: "<< con.nume<< ", Tel: "<< con.telefon<< endl;
+    }
+
+    cout<<"introduceti numele pentru a fi cautat:";
+    string nume;
+    cin>>nume;
+    Contact cautaContact = vector_cauta_contact(vectorContacte, nume);
+    cout<< "Nr tel gasit:"<< cautaContact.telefon;
+
+    return 0;
+}

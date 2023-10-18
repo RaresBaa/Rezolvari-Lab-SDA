@@ -1,0 +1,228 @@
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+/*
+Implementarea manuala a unui vector folosind template.
+
+Vom implementa urmatoarele functii:
+    -marire/micsorare automata
+    -Constructor, Destructor
+    -getSize()
+    -push_back()
+    -pop_back()
+    -insert()
+    -erase()
+    -folosire [] pentru acces elemente
+    -print_vector()
+Nu vom implementa auto i:vector, iteratori
+
+Exemple exercitii cu vectori:
+    Verificam daca un vector este palindrom
+    Verificam daca un vector este sortat crescator
+    Suma numerelor pare dintr-un vector
+    Cautam min si max dintr-un vector
+    Stergem elementele divizibile cu n dintr-un vector
+    Stergem elementele care se repeta intr-un vector
+    Inversam un vector
+    Rotim un vector cu k pozitii
+    Generam un vector de vectori cu NxN elemente crescatoare si il afisam
+*/
+
+template <typename T>
+class Vector{
+private:
+    T* data;
+    int size;
+    int capacity;
+
+    void resize(int newCapacity){
+        T* newData = new T[newCapacity];
+        // copiem elementele din vectorul vechi in cel nou
+        for(int i = 0; i < size; i++){
+            newData[i] = data[i];
+        }
+        // stergem vectorul vechi
+        delete[] data;
+        // modificam capacitatea si data
+        capacity = newCapacity;
+        data = newData;
+    }
+
+    void checkSize(){
+        // verificam daca trebuie sa redimensionam vectorul
+        // daca size == capacity, atunci trebuie sa crestem capacitatea
+        // sau daca size + 15 < capacity, atunci trebuie sa micsoram capacitatea
+        if(size == capacity){
+            resize(capacity + 10);
+        }
+        else if(size + 15 < capacity){
+            if(capacity - 10 < 10){
+                resize(10);
+            }
+            else {
+                resize(capacity - 10);
+            }
+        }
+
+    }
+public:
+    Vector(){
+        // initializam vectorul gol
+        size = 0;
+        capacity = 10;
+        data = new T[capacity];
+    }
+
+    ~Vector(){
+        delete[] data;
+    }
+
+    int getSize(){
+        return size;
+    }
+
+    void push_back(T value){
+        // verificam daca trebuie sa redimensionam vectorul
+        checkSize();
+        // adaugam valoarea pe ultima pozitie
+        data[size] = value;
+        // marim dimensiunea vectorului
+        size++;
+    }
+
+    T pop_back(){
+        // retinem valoarea care va fi scoasa
+        T value = data[size-1];
+        // micsoram dimensiunea vectorului si verificam daca trebuie sa redimensionam
+        size--;
+        checkSize();
+        // returnam valoarea scoasa
+        return value;
+    }
+
+    void insert(int index, T value){
+        checkSize();
+        // mutam toate elementele de dupa index cu o pozitie la dreapta
+        for(int i = size; i > index; i--){
+            data[i] = data[i - 1];
+        }
+        // introducem valoarea noua pe pozitia index
+        data[index] = value;
+        size++;
+    }
+
+    T erase(int index){
+        // retinem valoarea care va fi stearsa
+        T value = data[index];
+        // mutam toate elementele de dupa index cu o pozitie la stanga
+        for(int i = index; i < size - 1; i++){
+            data[i] = data[i + 1];
+        }
+        // micsoram dimensiunea vectorului si verificam daca trebuie sa redimensionam
+        size--;
+        checkSize();
+        // returnam valoarea stearsa
+        return value;
+
+    }
+
+    T &operator[](int index){
+        // acest operator ne permite sa folosim [] pentru a accesa elementele vectorului
+        // verificam daca indexul este valid
+        if(index < 0 || index >= size){
+            cout << "Index gresit" << endl;
+            return data[0];
+        }
+        return data[index];
+    }
+
+    void print_vector(){
+        //deoarece noi cream propriul vector, putem sa cream orice functie care ne ajuta
+        for(int i = 0; i < size; i++){
+            cout << data[i] << " ";
+        }
+        cout << endl;
+    }
+
+
+    // Acesta este codul necesar pentru a putea folosi: for(auto i: v)
+    // NU il vom implementa sau folosi, doar un exemplu pentru a vedea cum functioneaza
+    class iterator {
+    private:
+        T* ptr;
+    public:
+        iterator(T* p) : ptr(p) {}
+        T& operator*() {
+            return *ptr;
+        }
+        iterator& operator++() {
+            ++ptr;
+            return *this;
+        }
+        bool operator==(const iterator& other) const {
+            return ptr == other.ptr;
+        }
+        bool operator!=(const iterator& other) const {
+            return ptr != other.ptr;
+        }
+    };
+    iterator begin() {
+        return iterator(data);
+    }
+    iterator end() {
+        return iterator(data + size);
+    }
+};
+
+void test_Vector(){
+    Vector<int> v;
+    cout << "Testam push_back:" << endl;
+    cout<<"\tAdaugam 20 elemente in vector:\n\t";
+    for(int i = 0; i < 20; i++){
+        v.push_back(i);
+    }
+    v.print_vector();
+    cout << "Testam pop_back:\n\tUltimele 10 elemente: ";
+    for(int i = 0; i < 10; i++){
+        cout<<v.pop_back()<<" ";
+    }
+    cout<<"\n\tNoul vector:";
+    v.print_vector();
+    cout << "Testam insert:\n\tAdaugam 3 elemente pe pozitiile 3, 4, 5:\n\tNoul vector: ";
+    for(int i = 3; i< 6; i++){
+        v.insert(i, i*1000);
+    }
+    v.print_vector();
+    cout << "Testam erase:\n\tStergem primele 4 elemente:\n\tElementele sterse:";
+    for(int i = 0; i < 4; i++){
+        cout<<v.erase(0)<<" ";
+    }
+    cout<<"\n\tNoul vector:";
+    v.print_vector();
+    cout << "Testam operator[]:\n\tParcurgere cu []:";
+    for(int i = 0; i < v.getSize(); i++){
+        cout<<v[i]<<" ";
+    }
+    cout<<endl;
+    cout << "Testam for(auto i: v):\n\t";
+    for(auto i: v){
+        cout<<i<<" ";
+    }
+    cout<<"\nMarimea vectorului: "<<v.getSize()<<endl;
+
+    Vector<string> nume;
+    nume.push_back("Ana");
+    nume.push_back("Bob");
+    nume.push_back("Andrei");
+    cout<<"Exemplu cu string:\n\t";
+    for(auto i: nume){
+        cout<<i<<" ";
+    }
+}
+
+int main() {
+    test_Vector();
+    return 0;
+}

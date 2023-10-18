@@ -1,0 +1,364 @@
+/*
+Implementarea manuala a unui vector folosind template.
+
+Vom implementa urmatoarele functii:
+    -marire/micsorare automata
+    -Constructor, Destructor
+    -getSize()
+    -push_back()
+    -pop_back()
+    -insert()
+    -erase()
+    -folosire [] pentru acces elemente
+    -print_vector()
+Nu vom implementa auto i:vector, iteratori
+
+Exemple exercitii cu vectori:
+    Verificam daca un vector este palindrom
+    Verificam daca un vector este sortat crescator
+    Suma numerelor pare dintr-un vector
+    Cautam min si max dintr-un vector
+    Stergem elementele divizibile cu n dintr-un vector
+    Stergem elementele care se repeta intr-un vector
+    Inversam un vector
+    Rotim un vector cu k pozitii
+    Generam un vector de vectori cu NxN elemente crescatoare si il afisam
+*/
+
+#include <iostream>
+#include <string>
+using namespace std;
+
+template<typename T>
+class Vector {
+private:
+    int size;
+    int capacity;
+    T *data;
+
+    void resize(int newcapacity)
+    {
+        T *capacitatenoua=new T[newcapacity];
+
+        for(int i=0; i<size; i++)
+        {
+            capacitatenoua[i]=data[i];
+        }
+
+        capacity=newcapacity;
+
+        delete []data;
+        data=capacitatenoua;
+    }
+
+    void checkresize()
+    {
+        if(size==capacity)
+        {
+            resize(capacity+10);
+        }
+
+        if(size+15<capacity)
+        {
+            if(size>10)
+                resize(size-10);
+            else
+                resize(10);
+        }
+    }
+
+
+
+public:
+
+    Vector(int k)
+    {
+        size = 0;
+        capacity=k;
+        data=new T[capacity];
+
+    }
+
+    Vector()
+    {
+        size=0;
+        capacity=10;
+
+        data=new T[capacity];
+
+    }
+
+    int getSize()
+    {
+        return size;
+    }
+
+    void push_back(T element)
+    {
+        checkresize();
+        data[size] = element;
+        size++;
+    }
+
+    T pop_back()
+    {
+      T el = data[size - 1];
+      size --;
+      checkresize();
+      return el;
+    }
+
+    void insert(int index, T val)
+    {
+        checkresize();
+        for(int i=size;i>index;i--)
+        {
+            data[i]=data[i-1];
+
+        }
+        data[index]=val;
+        size++;
+    }
+    T erase(int index)
+    {
+        T variabila=data[index];
+        for(int i=index;i<size-1;i++)
+        {
+            data[i]=data[i+1];
+        }
+        size--;
+        checkresize();
+        return variabila;
+    }
+    T& operator[](int index){
+        return data[index];
+    }
+
+    ~Vector()
+    {
+        delete [] data;
+    }
+
+    void print_vector(){
+        for(int i=0; i<size; i++)
+        {
+            cout<<data[i]<<" ";
+        }
+        cout<<endl;
+    }
+
+    void read_vector(){
+        int n;
+
+
+        cin>>n;
+
+        for(int i=0; i<n; i++)
+        {
+            T variabila;
+            cin>>variabila;
+
+            push_back(variabila);
+        }
+
+    }
+
+    // Acesta este codul necesar pentru a putea folosi: for(auto i: v)
+    // NU il vom implementa sau folosi, doar un exemplu pentru a vedea cum functioneaza
+    class iterator {
+    private:
+        T* ptr;
+    public:
+        iterator(T* p) : ptr(p) {}
+        T& operator*() {
+            return *ptr;
+        }
+        iterator& operator++() {
+            ++ptr;
+            return *this;
+        }
+        bool operator==(const iterator& other) const {
+            return ptr == other.ptr;
+        }
+        bool operator!=(const iterator& other) const {
+            return ptr != other.ptr;
+        }
+    };
+    iterator begin() {
+        return iterator(data);
+    }
+    iterator end() {
+        return iterator(data + size);
+    }
+
+};
+
+void test_Vector(){
+    Vector<int> v;
+    cout << "Testam push_back:" << endl;
+    cout<<"\tAdaugam 20 elemente in vector:\n\t";
+    for(int i = 0; i < 20; i++){
+        v.push_back(i);
+    }
+    v.print_vector();
+    cout << "Testam pop_back:\n\tUltimele 10 elemente: ";
+    for(int i = 0; i < 10; i++){
+        cout<<v.pop_back()<<" ";
+    }
+    cout<<"\n\tNoul vector:";
+    v.print_vector();
+    cout << "Testam insert:\n\tAdaugam 3 elemente pe pozitiile 3, 4, 5:\n\tNoul vector: ";
+    for(int i = 3; i< 6; i++){
+        v.insert(i, i*1000);
+    }
+    v.print_vector();
+    cout << "Testam erase:\n\tStergem primele 4 elemente:\n\tElementele sterse:";
+    for(int i = 0; i < 4; i++){
+        cout<<v.erase(0)<<" ";
+    }
+    cout<<"\n\tNoul vector:";
+    v.print_vector();
+    cout << "Testam operator[]:\n\tParcurgere cu []:";
+    for(int i = 0; i < v.getSize(); i++){
+        cout<<v[i]<<" ";
+    }
+    cout<<endl;
+    cout << "Testam for(auto i: v):\n\t";
+    for(auto i: v){
+        cout<<i<<" ";
+    }
+    cout<<"\nMarimea vectorului: "<<v.getSize()<<endl;
+
+    Vector<string> nume;
+    nume.push_back("Ana");
+    nume.push_back("Bob");
+    nume.push_back("Andrei");
+    cout<<"Exemplu cu string:\n\t";
+    for(auto i: nume){
+        cout<<i<<" ";
+    }
+}
+
+void isPalindrom()
+{
+    Vector<int> v;
+    v.read_vector();
+    for(int i=0;i<v.getSize()/2;i++)
+    {
+        if (v[i]!=v[v.getSize()-i-1])
+        {
+            cout<<"Nu e palindrom."<<endl;
+            return;
+        }
+    }
+    cout<<"Este palindrom."<<endl;
+}
+
+void MIN_si_MAX()
+{
+    int max, min;
+
+    Vector <int> v;
+    v.read_vector();
+
+    min=v[0];
+    max=v[0];
+    for(int i=1; i<v.getSize(); i++) {
+        if (v[i] > max)
+            max = v[i];
+        else if (v[i] < min)
+            min = v[i];
+    }
+    cout<<"Minimul este: "<<min<<", iar maximul este "<<max<<endl;
+
+    }
+
+    void isSorted()
+    {
+      Vector <int> v;
+      v.read_vector();
+      for(int i = 1; i<v.getSize(); i++)
+      {
+          if(v[i] < v[i-1])
+          {
+              cout << "Nu este sortat crescator";
+              return;
+          }
+      }
+
+      cout << "Este sortat crescator";
+    }
+
+    void delete_elements()
+    {
+    Vector<int> v;
+    v.read_vector();
+    int divizor;
+    cin>>divizor;
+    int i=0;
+    while(i<v.getSize())
+    {
+        if(v[i]%divizor==0)
+        {
+            v.erase(i);
+        }
+        i++;
+    }
+    cout<<"Dupa"<<endl;
+    v.print_vector();
+    }
+
+
+    void RotateLeft()
+    {
+        Vector <int> v;
+        v.read_vector();
+        int rtl;
+
+        cout<<"specify number of rotations:";
+        cin>>rtl;
+        cout<<endl;
+
+        Vector <int> acc(v.getSize());
+
+
+        for(int i=0; i<rtl;i++)
+        {
+            acc[i]=v[i];
+        }
+        cout<<"acc:";
+        acc.print_vector();
+        cout<<endl;
+
+        for(int i=0; i<v.getSize()-rtl;i++)
+        {
+            v[i]=v[i+rtl];
+        }
+
+        for(int i=0;i<rtl;i++)
+        {
+            v[v.getSize()-i]=acc[rtl-1-i];
+        }
+
+        v.print_vector();
+
+
+    }
+
+    void numere_pare(){
+    Vector <int> v;
+     int s=0;
+    v.read_vector();
+        for(int i = 1; i<v.getSize(); i++)
+        {
+            if (v[i]%2==0)
+                s=s+v[i];
+        }
+    cout<<s<<" ";
+};
+
+int main(){
+    //isSorted();
+    numere_pare();
+    return 0;
+}

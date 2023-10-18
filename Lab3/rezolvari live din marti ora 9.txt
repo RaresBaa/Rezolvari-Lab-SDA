@@ -1,0 +1,328 @@
+/*
+Implementarea manuala a unui vector folosind template.
+
+Vom implementa urmatoarele functii:
+    -marire/micsorare automata
+    -Constructor, Destructor
+    -getSize()
+    -push_back()
+    -pop_back()
+    -insert()
+    -erase()
+    -folosire [] pentru acces elemente
+    -print_vector()
+Nu vom implementa auto i:vector, iteratori
+
+Exemple exercitii cu vectori:
+    Verificam daca un vector este palindrom
+    Verificam daca un vector este sortat crescator
+    Suma numerelor pare dintr-un vector
+    Cautam min si max dintr-un vector
+    Stergem elementele divizibile cu n dintr-un vector
+    Stergem elementele care se repeta intr-un vector
+    Inversam un vector
+    Rotim un vector cu k pozitii
+    Generam un vector de vectori cu NxN elemente crescatoare si il afisam
+*/
+
+#include <iostream>
+#include <string>
+using namespace std;
+
+template<typename T>
+class Vector{
+private:
+    int size;
+    int capacity;
+    T* data;
+
+    void resize(int newCapacity) {
+        T* newData = new T[newCapacity];
+        for (int i = 0; i < size; i++) {
+            newData[i] = data[i];
+        }
+        capacity = newCapacity;
+        delete[] data;
+        data = newData;
+    }
+
+    void checkSize() {
+        if (size == capacity)
+            resize(capacity + 10);
+        else if (size + 15 < capacity)
+            resize(capacity - 10);
+    }
+
+
+public:
+    Vector() {
+    size = 0;
+    capacity = 10;
+    data = new T[capacity];
+}
+
+    Vector(int newSize){
+        size=newSize;
+        capacity=newSize+10;
+        data=new T[capacity];
+    }
+
+    ~Vector() {
+    delete[] data;
+}
+
+    int getSize() {
+        return size;
+    }
+    void push_back (T element)
+    {
+       checkSize();
+       data[size] = element;
+       size++;
+    }
+    T pop_back ()
+    { T element;
+        element = data[size-1];
+        size--;
+        checkSize();
+        return element;
+    }
+
+    void insert(int index, T value)
+    {
+        checkSize();
+        for(int i=size;i>index;i--)
+        {
+            data[i]=data[i-1];
+        }
+        data[index]=value;
+        size++;
+    }
+
+    T erase(int index)
+    {
+        T element=data[index];
+        for(int i=index;i<size-1;i++)
+        {
+            data[i]=data[i+1];
+        }
+        size--;
+        checkSize();
+        return element;
+    }
+
+    T& operator[](int index)
+    {
+        return data[index];
+    }
+
+    void print_vector()
+    {
+        for(int i = 0; i < size;i++)
+            cout<<data[i]<<" ";
+        cout<<endl;
+    }
+    void read_vector()
+    {
+        int n;
+        cin>>n;
+        for(int i = 0; i < n; i++)
+        {
+            T element;
+            cin>>element;
+            push_back(element);
+        }
+    }
+
+    // Acesta este codul necesar pentru a putea folosi: for(auto i: v)
+    // NU il vom implementa sau folosi, doar un exemplu pentru a vedea cum functioneaza
+    class iterator {
+    private:
+        T* ptr;
+    public:
+        iterator(T* p) : ptr(p) {}
+        T& operator*() {
+            return *ptr;
+        }
+        iterator& operator++() {
+            ++ptr;
+            return *this;
+        }
+        bool operator==(const iterator& other) const {
+            return ptr == other.ptr;
+        }
+        bool operator!=(const iterator& other) const {
+            return ptr != other.ptr;
+        }
+    };
+    iterator begin() {
+        return iterator(data);
+    }
+    iterator end() {
+        return iterator(data + size);
+    }
+};
+
+void test_Vector(){
+    Vector<int> v;
+    cout << "Testam push_back:" << endl;
+    cout<<"\tAdaugam 20 elemente in vector:\n\t";
+    for(int i = 0; i < 20; i++){
+        v.push_back(i);
+    }
+    v.print_vector();
+    cout << "Testam pop_back:\n\tUltimele 10 elemente: ";
+    for(int i = 0; i < 10; i++){
+        cout<<v.pop_back()<<" ";
+    }
+    cout<<"\n\tNoul vector:";
+    v.print_vector();
+    cout << "Testam insert:\n\tAdaugam 3 elemente pe pozitiile 3, 4, 5:\n\tNoul vector: ";
+    for(int i = 3; i< 6; i++){
+        v.insert(i, i*1000);
+    }
+    v.print_vector();
+    cout << "Testam erase:\n\tStergem primele 4 elemente:\n\tElementele sterse:";
+    for(int i = 0; i < 4; i++){
+        cout<<v.erase(0)<<" ";
+    }
+    cout<<"\n\tNoul vector:";
+    v.print_vector();
+    cout << "Testam operator[]:\n\tParcurgere cu []:";
+    for(int i = 0; i < v.getSize(); i++){
+        cout<<v[i]<<" ";
+    }
+    cout<<endl;
+    cout << "Testam for(auto i: v):\n\t";
+    for(auto i: v){
+        cout<<i<<" ";
+    }
+    cout<<"\nMarimea vectorului: "<<v.getSize()<<endl;
+
+    Vector<string> nume;
+    nume.push_back("Ana");
+    nume.push_back("Bob");
+    nume.push_back("Andrei");
+    cout<<"Exemplu cu string:\n\t";
+    for(auto i: nume){
+        cout<<i<<" ";
+    }
+}
+
+void Vector_Palindrom(){
+    Vector<int> Palindrom;
+    Palindrom.read_vector();
+    int ok=1;
+    for(int i=0;i<Palindrom.getSize()/2;i++)
+    {
+        if(Palindrom[i]!=Palindrom[Palindrom.getSize()-i-1])
+        {
+            ok=0;
+            cout<<"Nu e palindrom"<<endl;
+            return;
+        }
+    }
+    if(ok)
+        cout<<"Palindrom"<<endl;
+}
+void vector_sumapara(){
+    Vector<int> Sumapara;
+    Sumapara.read_vector();
+    int sum=0;
+    for(int i=0; i<Sumapara.getSize();i++)
+    {
+        if(Sumapara[i]%2==0)
+            sum=sum+Sumapara[i];
+
+    }
+    cout<<"Suma este:"<<endl;
+    cout<<sum;
+
+
+}
+
+    void matrice()
+    {
+        int n;
+        cin>>n;
+        Vector<Vector <int>> matrice;
+        for(int i=0;i<n;i++)
+        {   Vector<int> V;
+            for(int j=0;j<n;j++)
+            {
+                V.push_back(i*j);
+            }
+            matrice.push_back(V);
+        }
+
+        for(int i=0;i<n;i++)
+        {
+            matrice[i].print_vector();
+        }
+    }
+
+    void sortare()
+    {
+        Vector<int> Sortare;
+        Sortare.read_vector();
+        int ok = 1;
+        for (int i = 0; i < Sortare.getSize()-1; ++i) {
+            if (Sortare[i] > Sortare[i+1])
+            {
+                ok = 0;
+                cout << "Nu e sortat crescator";
+                return;
+            }
+        }
+        cout << "E sortat crescator";
+    }
+
+    void rotire()
+    {
+        Vector<int> rotire;
+        rotire.read_vector();
+        Vector<int> aux(rotire.getSize());
+        int k;
+        cin>>k;
+        for(int i=0;i<rotire.getSize()-k;i++)
+        {
+            aux[i+k]=rotire[i];
+        }
+        for(int i=k;i<rotire.getSize();i++)
+        {
+            aux[i-k]=rotire[i];
+        }
+        aux.print_vector();
+    }
+
+    void Cautare()
+    {
+       Vector<int> elemente;
+
+       int min, max;
+
+       elemente.read_vector();
+
+       min=elemente[0];
+
+       max=elemente[0];
+
+       for(int i=0; i<elemente.getSize();++i)
+       {
+           if(min> elemente[i])
+               min=elemente[i];
+           if (max<elemente[i])
+               max=elemente[i];
+
+
+
+       }
+
+       cout<<" Maximul si minimul sunt "<< max<<" "<<min;
+
+
+    }
+int main(){
+    Cautare();
+    return 0;
+}
