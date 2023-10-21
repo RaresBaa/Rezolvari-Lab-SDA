@@ -1,0 +1,264 @@
+#include <iostream>
+
+using namespace std;
+
+/*
+Liste simplu inlantuite (singly linked list) manuale
+Functii pe care le vom implementa:
+constructor, destructor
+getSize()
+push_back()
+pop_back()
+insert()
+delete()
+operator[]
+print()
+read()
+
+Exemplu exercitii, puteti exersa aceste probleme si la vectori si vice versa:
+Minimul si maximul dintr-o lista
+Suma elementelor dintr-o lista
+Dintr-o lista, vom trece intr-un vector doar elementele pare
+Dintr-un vector vom trece intr-o lista doar elementele impare
+Stergem elementele mai mari decat o valoare data
+Inversul unei liste
+Afisam elementul din mijloc al unei liste
+Daca avem o lista cu secvente de 0 si 1, care este cea mai lunga secventa
+sortarea unei liste
+concatenarea a doua liste
+*/
+
+template <typename T>
+class List{
+private:
+    struct Node{
+        T data;
+        Node* next;
+
+    };
+    Node* head;
+    Node* tail;
+    int size;
+public:
+    List(){
+        head = nullptr;
+        tail = nullptr;
+        size = 0;
+    }
+    ~List(){
+        //trebuie sa stergem toate nodurile unul cate unul
+        Node* temp = head;
+        while(temp != nullptr){
+            Node* next = temp->next;
+            delete temp;
+            temp = next;
+        }
+    }
+    int getSize(){
+        return size;
+    }
+
+    void push_back(T data){
+        //cream un nou nod cu data noastra
+        Node* temp = new Node;
+        temp->data = data;
+        //nu va avea un next deoarece va fi ultimul nod
+        temp->next = nullptr;
+        //daca lista este goala, atunci head si tail vor fi noul nod
+        if(head == nullptr){
+            head = temp;
+            tail = temp;
+        }
+        else{
+            //altfel, nodul va fi adaugat la finalul listei
+            tail->next = temp;
+            tail = temp;
+        }
+        size++;
+    }
+
+    T pop_back(){
+        //daca lista este goala, nu avem ce sa stergem
+        if(head == nullptr){
+            return T();
+        }else if(head == tail){
+            //daca lista are un singur element, atunci head si tail vor fi nullptr
+            T data = head->data;
+            delete head;
+            head = nullptr;
+            tail = nullptr;
+            size--;
+            return data;
+        }
+        else{
+            //altfel, vom parcurge lista pana la penultimul element
+            Node* temp = head;
+            while(temp->next != tail){
+                temp = temp->next;
+            }
+            //stocam valoarea ultimului element
+            T data = tail->data;
+            //stergem ultimul element
+            delete tail;
+            //penultimul element va deveni ultimul element
+            tail = temp;
+            //ultimul element va deveni nullptr
+            tail->next = nullptr;
+            size--;
+            return data;
+        }
+    }
+
+    void insert(int index, T data){
+        //daca indexul este mai mare decat size, atunci nu avem cum sa inseram
+        if(index > size){
+            return;
+        }
+        //daca indexul este 0, atunci vom insera la inceputul listei
+        if(index == 0){
+            Node* temp = new Node;
+            temp->data = data;
+            temp->next = head;
+            head = temp;
+            size++;
+            return;
+        }
+        //daca indexul este egal cu size, atunci vom insera la finalul listei
+        if(index == size){
+            push_back(data);
+            return;
+        }
+        //altfel, vom parcurge lista pana la indexul dorit
+        Node* temp = head;
+        for(int i = 0; i < index - 1; i++){
+            temp = temp->next;
+        }
+        //cream un nou nod cu data noastra
+        Node* newNode = new Node;
+        newNode->data = data;
+        //noul nod va avea next-ul nodului de la indexul dorit
+        newNode->next = temp->next;
+        //nodul de la indexul dorit va avea next-ul noului nod
+        temp->next = newNode;
+        size++;
+    }
+
+    T erase(int index){
+        //daca indexul este mai mare decat size, atunci nu avem ce sa stergem
+        if(index >= size){
+            return T();
+        }
+        //daca indexul este 0, atunci vom sterge primul element
+        if(index == 0){
+            Node* temp = head;
+            T data = head->data;
+            head = head->next;
+            delete temp;
+            size--;
+            return data;
+        }
+        //daca indexul este egal cu size - 1, atunci vom sterge ultimul element
+        if(index == size - 1){
+            return pop_back();
+        }
+        //altfel, vom parcurge lista pana la indexul dorit
+        Node* temp = head;
+        for(int i = 0; i < index - 1; i++){
+            temp = temp->next;
+        }
+        //stocam valoarea nodului de la indexul dorit
+        T data = temp->next->data;
+        //stergem nodul de la indexul dorit
+        Node* toDelete = temp->next;
+        temp->next = temp->next->next;
+        delete toDelete;
+        size--;
+        return data;
+    }
+
+    T& operator[](int index){
+        //daca indexul este mai mare decat size, atunci nu avem ce sa returnam
+        if(index >= size){
+            return head->data;
+        }
+        //altfel, vom parcurge lista pana la indexul dorit
+        Node* temp = head;
+        for(int i = 0; i < index; i++){
+            temp = temp->next;
+        }
+        //returnam valoarea nodului de la indexul dorit
+        return temp->data;
+    }
+
+    void print(){
+        Node* temp = head;
+        while(temp != nullptr){
+            cout << temp->data << " ";
+            temp = temp->next;
+        }
+        cout << endl;
+    }
+
+    void read(){
+        int n;
+        cin >> n;
+        for(int i = 0; i < n; i++){
+            T data;
+            cin >> data;
+            push_back(data);
+        }
+    }
+
+    void concatenarea(List<T> list){
+        //daca lista este goala, atunci nu avem ce concatena
+        if(list.head == nullptr){
+            return;
+        }
+        //daca lista noastra este goala, atunci vom copia lista
+        if(head == nullptr){
+            head = list.head;
+            tail = list.tail;
+            size = list.size;
+            return;
+        }
+        //altfel, vom adauga la finalul listei noastre elementele din lista data
+        tail->next = list.head;
+        tail = list.tail;
+        size += list.size;
+    }
+};
+
+void testList(){
+    List<int> list;
+    cout<< "Inseram 20 de elemente in lista: \n\tLista noua:";
+    for(int i = 0; i < 20; i++){
+        list.push_back(i);
+        cout << i << " ";
+    }
+    cout<<"\nStergem ultimele 10 elemente: \n\tElemente sterse:";
+    for(int i = 0; i < 10; i++){
+        cout<<list.pop_back()<< " ";
+    }
+    cout<<"\n\tLista noua:";
+    list.print();
+    cout<<"Marimea listei: "<<list.getSize()<<"\nInseram elemente pe 3,4,5:\n\tLista noua:";
+    for(int i = 3; i < 6; i++){
+        list.insert(i, i*1000);
+    }
+    list.print();
+    cout<<"Stergem elemntele 0,1,2:\n\tLista noua:";
+    for(int i = 0; i < 3; i++){
+        cout<<list.erase(i)<<" ";
+    }
+    list.print();
+    cout<<"Testam operatorul []: \n\t";
+    for(int i = 0; i < list.getSize(); i++){
+        cout<<list[i]<<" ";
+    }
+
+}
+
+int main(){
+    testList();
+    return 0;
+}
