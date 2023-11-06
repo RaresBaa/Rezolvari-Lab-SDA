@@ -1,0 +1,469 @@
+#include <iostream>
+
+using namespace std;
+
+/*
+Se va citi n de la tastatura, apoi n perechi de caracter-prioritate care vor fi trecute intr-o coada pentru procesare.
+Vom avea maxim 2 prioritati. La iesire, vom afisa dupa prioritate caracterele, daca sunt vocale, acestea vor fi cu majuscule.
+ */
+
+template <typename T>
+class Queue {
+private:
+    struct Node{
+        T data;
+        int priority;
+        Node *next;
+    };
+    Node *head;
+    Node *tail;
+public:
+    Queue(){
+        head = nullptr;
+        tail = nullptr;
+    }
+    ~Queue(){
+        while(head != nullptr){
+            Node *temp = head;
+            head = head->next;
+            delete temp;
+        }
+    }
+    bool empty(){
+        return head == nullptr;
+    }
+    //front() - returneaza primul element din coada
+    T front(){
+        return head->data;
+    }
+    //pop() - sterge primul element din coada
+    void pop(){
+        Node *temp = head;
+        head = head->next;
+        delete temp;
+    }
+    //push() - adauga un element in coada, in functie de prioritate
+    void push(T data, int priority){
+        //cream un nod nou
+        Node *newNode = new Node;
+        newNode->data = data;
+        newNode->priority = priority;
+        newNode->next = nullptr;
+        //daca coada e goala, nodul nou va fi singurul element
+        if(head == nullptr){
+            head = newNode;
+            tail = newNode;
+            return;
+        }
+        //daca prioritatea primului element e mai mica decat cea a elementului nou, acesta va fi primul element
+        if(head->priority < priority){
+            newNode->next = head;
+            head = newNode;
+            return;
+        }
+        //parcurgem coada pana gasim un element cu prioritate mai mica
+        // decat cea a elementului nou sau pana ajungem la final
+        // mergem cu un element in spatele lui index pentru a putea modifica legaturile
+        Node *index = head;
+        while(index->next != nullptr && index->next->priority >= priority){
+            index = index->next;
+        }
+        newNode->next = index->next;
+        index->next = newNode;
+    }
+};
+
+int main(){
+    Queue<char> q;
+    int n;
+    cin >> n;
+    //citim n perechi de caracter-prioritate si le adaugam in coada
+    for(int i = 0; i < n; i++){
+        char c;
+        int priority;
+        cin >> c >> priority;
+        q.push(c, priority);
+    }
+    //afisam caracterele din coada, daca sunt vocale, acestea vor fi cu majuscule
+    while(!q.empty()){
+        char c = q.front();
+        q.pop();
+        switch (c){
+            case 'a':
+            case 'e':
+            case 'i':
+            case 'o':
+            case 'u':
+                cout << (char)toupper(c) << " ";
+                break;
+            default:
+                cout << c << " ";
+
+        }
+    }
+    return 0;
+}
+
+
+
+
+
+
+#include <iostream>
+
+using namespace std;
+
+/*
+Vom verifica daca parantezele dintr-o expresie sunt valide.
+Vom citi de la tastatura n-marimea expresiei iar apoi n charatere reprezentand expresia noastra
+De ex: "(3+4)/(2*(4+5))". Vom salva expresia intr-o stiva iar apoi vom verifica daca parantezele sunt valide.
+ */
+
+template <typename T>
+class Stack{
+private:
+    T* data;
+    int size;
+    int capacity;
+
+    void resize(int newCapacity){
+        T* newData = new T[newCapacity];
+        // copiem elementele din vectorul vechi in cel nou
+        for(int i = 0; i < size; i++){
+            newData[i] = data[i];
+        }
+        // stergem vectorul vechi
+        delete[] data;
+        // modificam capacitatea si data
+        capacity = newCapacity;
+        data = newData;
+    }
+
+    void checkSize(){
+        // verificam daca trebuie sa redimensionam vectorul
+        // daca size == capacity, atunci trebuie sa crestem capacitatea
+        // sau daca size + 15 < capacity, atunci trebuie sa micsoram capacitatea
+        if(size == capacity){
+            resize(capacity + 10);
+        }
+        else if(size + 15 < capacity){
+            if(capacity - 10 < 10){
+                resize(10);
+            }
+            else {
+                resize(capacity - 10);
+            }
+        }
+
+    }
+public:
+    Stack(){
+        // initializam vectorul gol
+        size = 0;
+        capacity = 10;
+        data = new T[capacity];
+    }
+
+    ~Stack(){
+        delete[] data;
+    }
+
+    void push(T value){
+        // verificam daca trebuie sa redimensionam vectorul
+        checkSize();
+        // adaugam valoarea pe ultima pozitie
+        data[size] = value;
+        // marim dimensiunea vectorului
+        size++;
+    }
+
+    T pop(){
+        // retinem valoarea care va fi scoasa
+        T value = data[size-1];
+        // micsoram dimensiunea vectorului si verificam daca trebuie sa redimensionam
+        size--;
+        checkSize();
+        // returnam valoarea scoasa
+        return value;
+    }
+};
+
+
+int main(){
+    Stack<char> s;
+    int n;
+    cin >> n;
+    char c;
+    for(int i = 0; i < n; i++) {
+        cin >> c;
+        s.push(c);
+    }
+    int parity = 0;
+    for(int i = 0; i< n; i++){
+        c = s.pop();
+        if(c == '('){
+            parity++;
+        }
+        else if(c == ')'){
+            parity--;
+        }
+    }
+    if(parity == 0){
+        cout << "Parantezele sunt valide" << endl;
+    }
+    else{
+        cout << "Parantezele nu sunt valide" << endl;
+    }
+    return 0;
+}
+
+
+
+
+#include <iostream>
+
+using namespace std;
+
+/*
+Vom aduna vecinii fiecarui element.
+Se citeste de la tastatura m-numarul de runde pe care le vom simula, apoi n-dimensiunea listei, urmat de n elemente care reprezinta elementele intiale.
+Pentru fiecare element din lista, vom aduna cu el insusi vecinii lui.Dupa ce am facut asta de m ori, vom afisa lista finala.
+
+De asemenea, putem implementa toate operatiile pentru o lista:
+-push_back()
+-pop_back()
+-push_front()
+-pop_front()
+-insert()
+-erase()
+-getSize()
+-operatorul []
+ */
+
+template <typename T>
+class DoubleList{
+private:
+    struct Node{
+        T data;
+        Node *next, *prev;
+    };
+    Node *head, *tail;
+    int size;
+public:
+    DoubleList(){
+        head = tail = NULL;
+        size = 0;
+    }
+
+    ~DoubleList(){
+        while(head != NULL){
+            Node *aux = head;
+            head = head->next;
+            delete aux;
+        }
+    }
+
+    int getSize(){
+        return size;
+    }
+
+    void push_back(T data){
+        Node *newNode = new Node;
+        newNode->data = data;
+        newNode->next = NULL;
+        newNode->prev = tail;
+        //daca lista nu e goala, adaugam noul nod la final
+        if(tail != NULL)
+            tail->next = newNode;
+        else
+            //daca lista e goala, noul nod va fi si capul listei
+            head = newNode;
+        tail = newNode;
+        size++;
+    }
+
+    T pop_back(){
+        //daca lista e goala, nu avem ce sa returnam
+        if(tail == NULL)
+            return T();
+        //salvam data si nodul care va fi sters
+        T data = tail->data;
+        Node *aux = tail;
+        //modificam coada spre penultimul element
+        tail = tail->prev;
+        //daca lista nu e goala, atunci ultimul element va avea next NULL
+        if(tail != NULL)
+            tail->next = NULL;
+        else
+            head = NULL;
+        delete aux;
+        size--;
+        return data;
+    }
+
+    void push_front(T data){
+        Node *newNode = new Node;
+        newNode->data = data;
+        newNode->next = head;
+        newNode->prev = NULL;
+        //daca lista nu e goala, adaugam noul nod la inceput
+        if(head != NULL)
+            head->prev = newNode;
+        else
+            //daca lista e goala, noul nod va fi si coada listei
+            tail = newNode;
+        head = newNode;
+        size++;
+    }
+
+    void insert(T data, int index){
+        //daca indexul e mai mare decat dimensiunea listei, nu facem nimic
+        if(index > size)
+            return;
+        //daca indexul e 0, atunci inseram la inceput
+        if(index == 0){
+            push_front(data);
+            return;
+        }
+        //daca indexul e egal cu dimensiunea listei, atunci inseram la final
+        if(index == size){
+            push_back(data);
+            return;
+        }
+        //daca indexul e mai mic decat dimensiunea listei, atunci inseram la index
+        Node *newNode = new Node;
+        newNode->data = data;
+        //parcurgem lista pana la index
+        Node *nodInserare = head;
+        for(int i = 0; i < index; i++)
+            nodInserare = nodInserare->next;
+        //inseram noul nod in lista
+        newNode->next = nodInserare;
+        newNode->prev = nodInserare->prev;
+        nodInserare->prev->next = newNode;
+        nodInserare->prev = newNode;
+        size++;
+    }
+
+    T pop_front(){
+        //daca lista e goala, nu avem ce sa returnam
+        if(head == NULL)
+            return T();
+        //salvam data si nodul care va fi sters
+        T data = head->data;
+        Node *aux = head;
+        //modificam capul spre al doilea element
+        head = head->next;
+        //daca lista nu e goala, atunci primul element va avea prev NULL
+        if(head != NULL)
+            head->prev = NULL;
+        else
+            tail = NULL;
+        delete aux;
+        size--;
+        return data;
+    }
+
+    T erase(int index){
+        //daca indexul e mai mare decat dimensiunea listei, nu facem nimic
+        if(index >= size)
+            return T();
+        //daca indexul e 0, atunci stergem de la inceput
+        if(index == 0)
+            return pop_front();
+        //daca indexul e egal cu dimensiunea listei - 1, atunci stergem de la final
+        if(index == size - 1)
+            return pop_back();
+        //daca indexul e mai mic decat dimensiunea listei, atunci stergem de la index
+        //parcurgem lista pana la index
+        Node *nodStergere = head;
+        for(int i = 0; i < index; i++)
+            nodStergere = nodStergere->next;
+        //stergem nodul din lista
+        nodStergere->prev->next = nodStergere->next;
+        nodStergere->next->prev = nodStergere->prev;
+        T data = nodStergere->data;
+        delete nodStergere;
+        size--;
+        return data;
+    }
+
+    T& operator[](int index){
+        //daca indexul este mai mare decat size, atunci nu avem ce sa returnam
+        if(index >= size){
+            return head->data;
+        }
+        //altfel, vom parcurge lista pana la indexul dorit
+        Node* temp = head;
+        for(int i = 0; i < index; i++){
+            temp = temp->next;
+        }
+        //returnam valoarea nodului de la indexul dorit
+        return temp->data;
+    }
+};
+
+void testDoubleList(){
+#define print cout<<"\n\tNoua lista: ";for(int i=0; i<l.getSize(); i++){cout<<l[i]<<" ";}
+    DoubleList<int> l;
+    cout<< "Test push_back:";
+    for(int i=0; i<20; i++){
+        l.push_back(i);
+    }
+    print
+    cout<<"\nTest pop_back, 5 elem: \n\t";
+    for(int i=0; i<5; i++){
+        cout<< l.pop_back()<<" ";
+    }
+    print
+    cout<<"\nTest push_front:";
+    l.push_front(1000);
+    print
+    cout<<"\nTest insert, index 5:";
+    l.insert(2000, 5);
+    print
+    cout<<"\nTest pop_front, 5 elem: \n\t";
+    for(int i=0; i<5; i++){
+        cout<< l.pop_front()<<" ";
+    }
+    print
+    cout<<"\nTest erase, index 5:";
+    l.erase(5);
+    print
+}
+
+void sumaVecini(){
+    /*
+Vom aduna vecinii fiecarui element.
+Se citeste de la tastatura m-numarul de runde pe care le vom simula, apoi n-dimensiunea listei, urmat de n elemente care reprezinta elementele intiale.
+Pentru fiecare element din lista, vom aduna cu el insusi vecinii lui.Dupa ce am facut asta de m ori, vom afisa lista finala.
+     */
+    int m, n;
+    cin>>m>>n;
+    DoubleList<int> l;
+    for(int i=0; i<n; i++){
+        int x;
+        cin>>x;
+        l.push_back(x);
+    }
+    //simulam m runde
+    for(int i=0; i<m; i++){
+        //pentru fiecare element din lista, adunam cu vecinii lui
+        //pentru capete, avem doar un vecin
+        l[0] += l[1];
+        for(int j=1; j<l.getSize()-1; j++){
+            l[j] += l[j-1] + l[j+1];
+        }
+
+        l[l.getSize()-1] += l[l.getSize()-2];
+    }
+    //afisam lista finala
+    for(int i=0; i<l.getSize(); i++){
+        cout<<l[i]<<" ";
+    }
+}
+
+int main(){
+    sumaVecini();
+    return 0;
+}
