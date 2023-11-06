@@ -1,0 +1,402 @@
+#include <iostream>
+#include <vector>
+using namespace std;
+
+/*
+    Exemplu exercitii, puteti exersa aceste probleme si la vectori si vice versa:
+Minimul si maximul dintr-o lista
+Suma elementelor dintr-o lista
+Dintr-o lista, vom trece intr-un vector doar elementele pare
+Dintr-un vector vom trece intr-o lista doar elementele impare
+Stergem elementele mai mari decat o valoare data
+Inversul unei liste
+Afisam elementul din mijloc al unei liste
+Daca avem o lista cu secvente de 0 si 1, care este cea mai lunga secventa de 0
+sortarea unei liste
+concatenarea a doua liste
+*/
+
+template <typename T>
+class List{
+private:
+    struct Node{
+        T data;
+        Node* next;
+
+    };
+    Node* head;
+    Node* tail;
+    int size;
+public:
+    List(){
+        head = nullptr;
+        tail = nullptr;
+        size = 0;
+    }
+    ~List(){
+        //trebuie sa stergem toate nodurile unul cate unul
+        Node* temp = head;
+        while(temp != nullptr){
+            Node* next = temp->next;
+            delete temp;
+            temp = next;
+        }
+    }
+    int getSize(){
+        return size;
+    }
+
+    void push_back(T data){
+        //cream un nou nod cu data noastra
+        Node* temp = new Node;
+        temp->data = data;
+        //nu va avea un next deoarece va fi ultimul nod
+        temp->next = nullptr;
+        //daca lista este goala, atunci head si tail vor fi noul nod
+        if(head == nullptr){
+            head = temp;
+            tail = temp;
+        }
+        else{
+            //altfel, nodul va fi adaugat la finalul listei
+            tail->next = temp;
+            tail = temp;
+        }
+        size++;
+    }
+
+    T pop_back(){
+        //daca lista este goala, nu avem ce sa stergem
+        if(head == nullptr){
+            return T();
+        }else if(head == tail){
+            //daca lista are un singur element, atunci head si tail vor fi nullptr
+            T data = head->data;
+            delete head;
+            head = nullptr;
+            tail = nullptr;
+            size--;
+            return data;
+        }
+        else{
+            //altfel, vom parcurge lista pana la penultimul element
+            Node* temp = head;
+            while(temp->next != tail){
+                temp = temp->next;
+            }
+            //stocam valoarea ultimului element
+            T data = tail->data;
+            //stergem ultimul element
+            delete tail;
+            //penultimul element va deveni ultimul element
+            tail = temp;
+            //ultimul element va deveni nullptr
+            tail->next = nullptr;
+            size--;
+            return data;
+        }
+    }
+
+    void insert(int index, T data){
+        //daca indexul este mai mare decat size, atunci nu avem cum sa inseram
+        if(index > size){
+            return;
+        }
+        //daca indexul este 0, atunci vom insera la inceputul listei
+        if(index == 0){
+            Node* temp = new Node;
+            temp->data = data;
+            temp->next = head;
+            head = temp;
+            size++;
+            return;
+        }
+        //daca indexul este egal cu size, atunci vom insera la finalul listei
+        if(index == size){
+            push_back(data);
+            return;
+        }
+        //altfel, vom parcurge lista pana la indexul dorit
+        Node* temp = head;
+        for(int i = 0; i < index - 1; i++){
+            temp = temp->next;
+        }
+        //cream un nou nod cu data noastra
+        Node* newNode = new Node;
+        newNode->data = data;
+        //noul nod va avea next-ul nodului de la indexul dorit
+        newNode->next = temp->next;
+        //nodul de la indexul dorit va avea next-ul noului nod
+        temp->next = newNode;
+        size++;
+    }
+
+    T erase(int index){
+        //daca indexul este mai mare decat size, atunci nu avem ce sa stergem
+        if(index >= size){
+            return T();
+        }
+        //daca indexul este 0, atunci vom sterge primul element
+        if(index == 0){
+            //stocam valoarea primului element
+            T data = head->data;
+            //stergem primul element
+            Node* temp = head;
+            //head va deveni al doilea element
+            head = head->next;
+            //stergem vechiul head
+            delete temp;
+            size--;
+            return data;
+        }
+        //altfel, vom parcurge lista pana la elementul de dinainte
+        Node* temp = head;
+        for(int i = 0; i < index - 1; i++){
+            temp = temp->next;
+        }
+        //stocam valoarea nodului de la indexul dorit
+        T data = temp->next->data;
+        //stocheam nodul de dupa nodul de la indexul dorit
+        Node* next = temp->next->next;
+        //stergem nodul de la indexul dorit
+        delete temp->next;
+        //nodul de la indexul dorit va deveni nodul de dupa el
+        temp->next = next;
+        size--;
+        return data;
+    }
+
+    T& operator[](int index){
+        //daca indexul este mai mare decat size, atunci nu avem ce sa returnam
+        if(index >= size){
+            return head->data;
+        }
+        //altfel, vom parcurge lista pana la indexul dorit
+        Node* temp = head;
+        for(int i = 0; i < index; i++){
+            temp = temp->next;
+        }
+        //returnam valoarea nodului de la indexul dorit
+        return temp->data;
+    }
+
+    void print(){
+        Node* temp = head;
+        while(temp != nullptr){
+            cout << temp->data << " ";
+            temp = temp->next;
+        }
+        cout << endl;
+    }
+
+    void read(){
+        int n;
+        cin >> n;
+        for(int i = 0; i < n; i++){
+            T data;
+            cin >> data;
+            push_back(data);
+        }
+    }
+
+    T middleElement(){
+        //folosim tehnica celor 2 pointeri, fast pointer si slow pointer
+        //fast pointer va parcurge lista de 2 ori mai repede decat slow pointer
+        Node *fast = head;
+        Node *slow = head;
+        //vom parcurge lista pana cand fast va ajunge la final
+        while(fast != nullptr && fast->next != nullptr){
+            //fast va avansa cu 2 pozitii
+            fast = fast->next->next;
+            //slow va avansa cu o pozitie
+            slow = slow->next;
+        }
+        return slow->data;
+    }
+
+    void concatenarea(List<T> list) {
+        //vom parcurge lista si vom adauga fiecare element in lista noastra
+        //deoarece destructorul nostru nu ia in calcul cazuri speciale, ne va da eroarea de "double free"
+        //pentru a vedea ca functioneaza concatenarea, putem sa comentam destructorul.
+        //o alta solutie mult mai eficienta ar fi sa spunem ca tail-ul de la prima lista are
+        //next-ul primul element(head) de la a doua lista
+        for (int i = 0; i < list.getSize(); i++) {
+            push_back(list[i]);
+        }
+    }
+};
+
+void testList(){
+    List<int> list;
+    cout<< "Inseram 20 de elemente in lista: \n\tLista noua:";
+    for(int i = 0; i < 20; i++){
+        list.push_back(i);
+        cout << i << " ";
+    }
+    cout<<"\nStergem ultimele 10 elemente: \n\tElemente sterse:";
+    for(int i = 0; i < 10; i++){
+        cout<<list.pop_back()<< " ";
+    }
+    cout<<"\n\tLista noua:";
+    list.print();
+    cout<<"Marimea listei: "<<list.getSize()<<"\nInseram elemente pe 3,4,5:\n\tLista noua:";
+    for(int i = 3; i < 6; i++){
+        list.insert(i, i*1000);
+    }
+    list.print();
+    cout<<"Stergem elemntele 0,1,2:\n\tLista noua:";
+    for(int i = 0; i < 3; i++){
+        cout<<list.erase(i)<<" ";
+    }
+    list.print();
+    cout<<"Testam operatorul []: \n\t";
+    for(int i = 0; i < list.getSize(); i++){
+        cout<<list[i]<<" ";
+    }
+
+}
+
+void minMaxList(){
+    List<int> list;
+    list.read();
+    int min = list[0];
+    int max = list[0];
+    for(int i = 1; i < list.getSize(); i++){
+        if(list[i] < min){
+            min = list[i];
+        }
+        if(list[i] > max){
+            max = list[i];
+        }
+    }
+    cout << "Minimul este: " << min << endl;
+    cout << "Maximul este: " << max << endl;
+}
+
+void sumElements(){
+    List<int> list;
+    list.read();
+    int sum = 0;
+    for(int i = 0; i < list.getSize(); i++){
+        sum += list[i];
+    }
+    cout << "Suma elementelor este: " << sum << endl;
+}
+
+void listToVector(){
+    //dintr-o lista, vom trece intr-un vector doar elementele pare
+    //putem folosi clasa scrisa de noi la labul3
+    List<int> list;
+    list.read();
+    vector<int> vec;
+    for(int i = 0; i < list.getSize(); i++){
+        if(list[i] % 2 == 0){
+            vec.push_back(list[i]);
+        }
+    }
+    for(int i = 0; i < vec.size(); i++){
+        cout << vec[i] << " ";
+    }
+}
+
+void vectorToList(){
+    //dintr-un vector vom trece intr-o lista doar elementele impare
+    //putem folosi clasa scrisa de noi la labul3
+    vector<int> vec;
+    int n;
+    cin >> n;
+    for(int i = 0; i < n; i++){
+        int data;
+        cin >> data;
+        vec.push_back(data);
+    }
+    List<int> list;
+    for(int i = 0; i < vec.size(); i++){
+        if(vec[i] % 2 == 1){
+            list.push_back(vec[i]);
+        }
+    }
+    list.print();
+}
+
+void deleteBigger(){
+    //Stergem elementele mai mari decat o valoare data
+    List<int> list;
+    list.read();
+    int val;
+    cin >> val;
+    for(int i = 0; i < list.getSize(); i++){
+        if(list[i] > val){
+            list.erase(i);
+            i--;
+        }
+    }
+    cout << "Lista noua: ";
+    list.print();
+}
+
+void reverseList(){
+    //Inversul unei liste
+    List<int> list;
+    list.read();
+    //aici parcurgem lista pana la jumatate si schimbam elementele intre ele,
+    //o metoda mai simpla ar fi sa parcurgem lista de la final la inceput si sa adaugam elementele intr-o lista noua
+    //dar asta ar necesita mai multe resurse
+    for(int i = 0; i < list.getSize() / 2; i++){
+        int temp = list[i];
+        list[i] = list[list.getSize() - i - 1];
+        list[list.getSize() - i - 1] = temp;
+    }
+    cout << "Lista noua: ";
+    list.print();
+}
+
+void middleElement(){
+    //Afisam elementul din mijloc al unei liste
+    List<int> list;
+    list.read();
+    //aici vom folosi tehnica celor 2 pointeri, fast pointer si slow pointer
+    //vom declara o functie noua in clasa noastra pentru a putea lucra aspura listei direct
+    cout << "Elementul din mijloc este: " << list.middleElement() << endl;
+}
+
+void binarySequence(){
+    //Daca avem o lista cu secvente de 0 si 1, care este cea mai lunga secventa de 0
+    List<int> list;
+    list.read();
+    int max = 0;
+    int current = 0;//marimea secventei unde suntem
+    for(int i = 0; i<list.getSize();i++){
+        //daca vedem un 1 atunci resetam marimea curenta
+        //iar daca vedem un 0 atunci marimea curenta creste
+        if(list[i] == 1){
+            current = 0;
+        }else{
+            current++;
+            //verificam daca marimea curenta este mai mare decat marimea maxima
+            if(current > max){
+                max = current;
+            }
+        }
+    }
+    cout << "Cea mai lunga secventa de 0 are lungimea: " << max << endl;
+}
+
+void concatenare(){
+    //concatenarea a doua liste
+    cout<<"Introduceti prima lista: ";
+    List<int> list1;
+    list1.read();
+    cout<<"Introduceti a doua lista: ";
+    List<int> list2;
+    list2.read();
+    //vom declara o functie noua in clasa noastra
+    list1.concatenarea(list2);
+    cout << "Lista noua: ";
+    list1.print();
+}
+
+int main(){
+    testList();
+    return 0;
+}
