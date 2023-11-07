@@ -1,0 +1,219 @@
+#include <iostream>
+
+using namespace std;
+
+
+
+/*
+Se va citi n de la tastatura, apoi n perechi de caracter-prioritate
+ care vor fi trecute intr-o coada pentru procesare.
+Vom avea maxim 2 prioritati. La iesire, vom afisa dupa prioritate caracterele,
+ daca sunt vocale, acestea vor fi cu majuscule.
+ */
+
+template <typename T>
+class Coada
+{
+private:
+    struct Node
+    {
+        T info;
+        Node* next;
+        int priority;
+    };
+    Node* first;
+    Node* last;
+
+public:
+
+    Coada()
+    {
+        first=last= nullptr;
+    }
+
+    ~Coada()
+    {
+        while(first!=nullptr)
+        {
+            Node* temp=first;
+            first=first->next;
+            delete temp;
+        }
+    }
+
+    bool empty()
+    {
+        return first==nullptr;
+    }
+
+    T front()
+    {
+        return first->info;
+    }
+
+    void pop()
+    {
+        Node* temp;
+        temp=first;
+        first=first->next;
+        delete temp;
+    }
+
+    void push(T data,int prioritate)
+    {
+        Node* n = new Node;
+        n->info = data;
+        n->priority=prioritate;
+        n->next=nullptr;
+        if(empty())
+        {
+            first=n;
+            last=n;
+            return;
+        }
+        if(n->priority > first->priority)
+        {
+            n->next=first;
+            first=n;
+            return;
+        }
+        Node* temp;
+        temp=first;
+        while(temp->next!=nullptr && temp->next->priority >= n->priority)
+        {
+            temp=temp->next;
+        }
+        n->next=temp->next;
+        temp->next=n;
+    }
+};
+
+
+int main()
+{
+    Coada<char> c;
+    int n;
+    cin >>n;
+    for(int i=0;i<n;i++)
+    {
+        char x;
+        int p;
+        cin >> x >> p;
+        c.push(x,p);
+    }
+    for(int i = 0;i<n;i++)
+    {
+        switch(c.front())
+        {
+            case 'a' :
+            case 'e' :
+            case 'i' :
+            case 'o' :
+            case 'u' :
+                cout << (char) toupper(c.front());
+                break;
+            default :
+                cout << c.front();
+        }
+        c.pop();
+    }
+
+    return 0;
+}
+
+
+
+
+#include <iostream>
+
+using namespace std;
+
+/*
+Vom verifica daca parantezele dintr-o expresie sunt valide.
+Vom citi de la tastatura n-marimea expresiei iar apoi n charatere reprezentand expresia noastra
+De ex: "(3+4)/(2*(4+5))". Vom salva expresia intr-o stiva iar apoi
+ vom verifica daca parantezele sunt valide.
+ */
+
+template <typename T>
+class Stack{
+private:
+    T *data;
+    int size, capacity;
+
+    void resize(int new_capacity)
+    {
+        T *temp = new T[new_capacity];
+
+        for (int i=0; i < size; i++)
+            temp[i] = data[i];
+
+        delete []data;
+
+        data = temp;
+        capacity = new_capacity;
+    }
+
+    void check_size(){
+        if (size == capacity)
+            resize(capacity+10);
+
+        if (size <= capacity-15)
+            resize (capacity-10);
+    }
+
+public:
+    Stack()
+    {
+        size = 0;
+        capacity = 10;
+        data = new T[capacity];
+    }
+
+    ~Stack()
+    {
+        delete []data;
+    }
+
+    void push(T pushed){
+        check_size();
+        data[size] = pushed;
+        size++;
+    }
+
+    T pop(){
+        T temp = data[size-1];
+        size--;
+        check_size();
+        return temp;
+    }
+};
+
+int main(){
+    int n, verify=0;
+    char x;
+    Stack <char> my_stack;
+
+    cin>>n;
+
+    for (int i=0; i<n; i++) {
+        cin >> x;
+        my_stack.push(x);
+    }
+
+    for (int i=0; i<n; i++){
+        char temp_char;
+        temp_char = my_stack.pop();
+        if (temp_char == '(')
+            verify++;
+
+        if (temp_char == ')')
+            verify--;
+    }
+    if (verify == 0)
+        cout<<"The equation is correct.";
+    else
+        cout <<"Whomp whomp :(";
+
+    return 0;
+}

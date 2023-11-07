@@ -1,0 +1,206 @@
+#include <iostream>
+
+using namespace std;
+/*
+Se va citi n de la tastatura, apoi n perechi de caracter-prioritate
+ care vor fi trecute intr-o coada pentru procesare.
+Vom avea maxim 2 prioritati. La iesire, vom afisa dupa prioritate caracterele,
+ daca sunt vocale, acestea vor fi cu majuscule.
+ */
+template <typename T>
+class queue{
+    struct Node{
+        T data;
+        Node *next;
+        int priority;
+    };
+    Node *tail,*head;
+public:
+    queue(){///constructor
+        head=nullptr; tail=nullptr;
+    }
+   ~queue(){///destructor
+      while(head!=nullptr)/// node urile sunt mereu cu pointeri
+      {
+          Node *temp=head;
+          head=head->next;
+          delete temp;
+      }
+    }
+
+    bool empty()
+    {
+        return head == nullptr;
+    }
+
+    T front()
+    {
+        return head->data;
+    }
+
+    void pop()
+    {
+        Node* temp;
+        temp = head;
+        head = head->next;
+        delete temp;
+    }
+
+    void push(T d , int p)
+    {
+        Node *newNode= new Node;
+
+        newNode->data = d;
+        newNode->priority = p;
+        newNode->next = nullptr;
+
+        if(head == nullptr)
+        {
+            head = tail = newNode;
+                return ;
+        }
+
+        if(newNode->priority > head->priority)
+        {
+            newNode->next = head;
+            head = newNode;
+
+            return ;
+        }
+
+        Node *idx;
+        idx = head;
+        while(idx->next != nullptr && idx->next->priority >= newNode->priority)
+        {
+            idx = idx->next;
+        }
+
+        newNode->next = idx->next;
+        idx->next = newNode;
+
+    }
+
+};
+int main(){
+
+    int n;
+    cin>>n;
+
+    queue<char> q;
+
+    for(int i=0 ; i< n ; i++)
+    {
+       char d;
+       cin>>d;
+
+       int p;
+       cin>>p;
+
+       q.push(d , p);
+    }
+
+    while(!q.empty()) {
+        char c;
+        c = q.front();
+
+        q.pop();
+
+        switch (c)
+        {
+            case 'a':
+            case 'e':
+            case 'i':
+            case 'o':
+            case 'u':
+                cout<<(char) toupper(c);
+            break;
+            default:
+                cout<<c;
+        }
+    }
+
+    return 0;
+}
+
+
+
+
+
+#include <iostream>
+
+using namespace std;
+
+/*
+Vom verifica daca parantezele dintr-o expresie sunt valide.
+Vom citi de la tastatura n-marimea expresiei iar apoi n charatere
+ reprezentand expresia noastra
+De ex: "(3+4)/(2*(4+5))". Vom salva expresia intr-o stiva iar apoi
+ vom verifica daca parantezele sunt valide.
+ */
+
+template<typename T>
+class stack{
+private:
+T *data;
+int size;
+int maxcap;
+void checkSize(){
+    if(size==maxcap){
+        resize(maxcap+10);
+    }
+    if(size+15<maxcap){
+        resize(maxcap-10);
+    }
+}
+void resize(int newsize){
+    T *newArray=new T[newsize];
+    for(int i=0;i<size;i++){
+        newArray[i]=data[i];
+    }
+    delete[] data;
+    data=newArray;
+    maxcap=newsize;
+}
+public:
+stack(){
+    size=0;
+    maxcap=10;
+    data=new T[maxcap];
+}
+~stack(){
+    delete[] data;
+}
+void push(T d){
+    checkSize();
+    data[size]=d;
+    size++;
+}
+T pop(){
+    T temp=data[size-1];
+    size--;
+    checkSize();
+    return temp;
+}
+};
+
+int main(){
+    int n;
+    cin>>n;
+    char x;
+    stack<char> S;
+    for(int i=0;i<n;i++){
+        cin>>x;
+        S.push(x);
+    }
+    int c=0;
+    for(int i=0; i<n;i++){
+        char temp;
+        temp=S.pop();
+        if(temp=='(')
+            c++;
+        else if(temp==')')
+            c--;
+    }
+    cout<<c;
+    return 0;
+}
