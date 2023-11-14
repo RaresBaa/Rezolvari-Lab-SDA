@@ -1,0 +1,189 @@
+#include <iostream>
+
+using namespace std;
+
+/*
+Exemplu de lista dublu inlantuita unde avem nodurile definite ca si o clasa separata.
+Logica nodurilor nu se schimba fata de implementarea cu o structura in interiorul clasei DoubleList.
+Aici trebuie sa mai facem un constructor pentru clasa de Node si sa adaugam friend class DoubleList<T>
+ */
+
+// Trebuie declarata inainte pentru a putea folo friend in clasa Node
+template <typename T>
+class DoubleList;
+
+// Clasa Node este definita inainte pentru a putea fi folosita in clasa DoubleList
+template <typename T>
+class Node {
+private:
+    T data;
+    Node<T>* next;
+    Node<T>* prev;
+
+    //pentru template-uri trebuie adaugat <T>
+    friend class DoubleList<T>;
+
+public:
+    // Constructor pentru fiecare nod
+    Node(T val) : data(val), next(nullptr), prev(nullptr) {}
+};
+
+template <typename T>
+class DoubleList {
+private:
+    Node<T>* head;
+    Node<T>* tail;
+    int size;
+public:
+    // Constructor pentru lista
+    DoubleList() : head(nullptr), tail(nullptr), size(0) {}
+
+    ~DoubleList() {
+        while(head != nullptr) {
+            Node<T>* temp = head;
+            head = head->next;
+            delete temp;
+        }
+    }
+
+    int getSize(){
+        return size;
+    }
+
+    void push_back(T data){
+        Node<T>* newNode = new Node<T>(data);
+        if (head == nullptr){
+            head = newNode;
+            tail = newNode;
+        }else{
+            tail->next = newNode;
+            newNode->prev = tail;
+            tail = newNode;
+        }
+        size++;
+    }
+
+    void push_front(T data){
+        Node<T>* newNode = new Node<T>(data);
+        if (head == nullptr){
+            head = newNode;
+            tail = newNode;
+        }else{
+            newNode->next = head;
+            head->prev = newNode;
+            head = newNode;
+        }
+        size++;
+    }
+
+    T pop_back(){
+        Node<T>* temp = tail;
+        T data = temp->data;
+        tail = tail->prev;
+        if (tail != nullptr){
+            tail->next = nullptr;
+        }else{
+            head = nullptr;
+        }
+        delete temp;
+        size--;
+        return data;
+    }
+
+    T pop_front(){
+        Node<T>* temp = head;
+        T data = temp->data;
+        head = head->next;
+        if (head != nullptr){
+            head->prev = nullptr;
+        }else{
+            tail = nullptr;
+        }
+        delete temp;
+        size--;
+        return data;
+    }
+
+    void insert(T data, int index){
+        if (index == 0){
+            push_front(data);
+            return;
+        }
+        if (index == size){
+            push_back(data);
+            return;
+        }
+        Node<T>* newNode = new Node<T>(data);
+        Node<T>* temp = head;
+        for(int i=0; i<index-1; i++){
+            temp = temp->next;
+        }
+        newNode->next = temp->next;
+        newNode->prev = temp;
+        temp->next->prev = newNode;
+        temp->next = newNode;
+        size++;
+    }
+
+    T erase(int index){
+        if (index == 0){
+            return pop_front();
+        }
+        if (index == size-1){
+            return pop_back();
+        }
+        Node<T>* temp = head;
+        for(int i=0; i<index; i++){
+            temp = temp->next;
+        }
+        T data = temp->data;
+        temp->prev->next = temp->next;
+        temp->next->prev = temp->prev;
+        delete temp;
+        size--;
+        return data;
+    }
+
+    T& operator[](int index){
+        Node<T>* temp = head;
+        for(int i=0; i<index; i++){
+            temp = temp->next;
+        }
+        return temp->data;
+    }
+
+};
+
+void testDoubleList(){
+#define print cout<<"\n\tNoua lista: ";for(int i=0; i<l.getSize(); i++){cout<<l[i]<<" ";}
+    DoubleList<int> l;
+    cout<< "Test push_back:";
+    for(int i=0; i<20; i++){
+        l.push_back(i);
+    }
+    print
+    cout<<"\nTest pop_back, 5 elem: \n\t";
+    for(int i=0; i<5; i++){
+        cout<< l.pop_back()<<" ";
+    }
+    print
+    cout<<"\nTest push_front:";
+    l.push_front(1000);
+    print
+    cout<<"\nTest insert, index 5:";
+    l.insert(2000, 5);
+    print
+    cout<<"\nTest pop_front, 5 elem: \n\t";
+    for(int i=0; i<5; i++){
+        cout<< l.pop_front()<<" ";
+    }
+    print
+    cout<<"\nTest erase, index 5:";
+    l.erase(5);
+    print
+}
+
+int main() {
+    testDoubleList();
+    return 0;
+}

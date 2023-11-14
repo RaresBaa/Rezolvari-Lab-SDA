@@ -1,0 +1,192 @@
+#include <iostream>
+
+using namespace std;
+
+/*
+1.Vom aduna vecinii fiecarui element.
+Se citeste de la tastatura m-numarul de runde pe care le vom simula, apoi n-dimensiunea listei, urmat de n elemente care reprezinta elementele intiale.
+Pentru fiecare element din lista, vom aduna cu el insusi vecinii lui. Adunarea se va face de la stanga la dreapta.
+Dupa ce am facut asta de m ori, vom afisa lista finala.
+
+2.Vom gasi intr-o lista perechea de elemente care au suma o valoare data.
+Se citeste de la tastatura n-dimensiunea listei, urmat de n elemente care reprezinta elementele listei.
+Se citeste de la tastatura o valoare x.
+Trebuie sa gasim o pereche de elemente din lista care au suma egala cu x.
+Vom afisa elementele din pereche.
+
+3.Vom pune elementele pare la inceputul listei, iar elementele impare la final.
+Se citeste de la tastatura n-dimensiunea listei, urmat de n elemente care reprezinta elementele listei.
+Vom afisa lista dupa ce am pus elementele pare la inceputul listei, iar elementele impare la final.
+
+4. Folosind algoritmul slow si fast pointer, vom gasi elementul din mijlocul listei.
+Se citeste de la tastatura n-dimensiunea listei, urmat de n elemente care reprezinta elementele listei.
+Vom afisa elementul din mijlocul listei.
+
+Alte exemple de probleme:
+- rotim lista cu k pozitii
+- stergem elementele din lista care se repeta
+- stergem elementele din lista care sunt mai mari decat media elementelor din lista
+
+De asemenea, putem implementa toate operatiile pentru o lista:
+-push_back()
+-pop_back()
+-push_front()
+-pop_front()
+-insert()
+-erase()
+-getSize()
+-operatorul []
+ */
+
+//template<typename
+
+//template <typename T>
+
+
+template <typename T>
+class DoubleList
+{
+    struct Nod
+    {
+        T info;
+        Nod *pre;
+        Nod *next;
+    };
+    Nod *head; // inc
+    Nod *tail; // ultimu
+    int size;
+
+public:
+
+    DoubleList()
+    {
+        size=0;
+        head=tail= nullptr;
+    }
+
+    ~DoubleList()
+    {
+        while(head!=nullptr)
+        {
+            Nod *temp=head;
+            head=head->next;
+            delete temp;
+        }
+    }
+
+    int getSize()
+    {
+        return size;
+    }
+
+    void push_back(const T &d)
+    {
+        Nod* temp=new Nod{d, tail, nullptr};
+        if(tail != nullptr){
+            tail->next = temp;
+        }else{
+            head = temp;
+        }
+        tail=temp;
+        size++;
+    }
+
+    void push_front(T data)
+    {
+        Nod* temp = new Nod{data , NULL , head};
+
+        if(head == NULL)
+        {
+            tail = temp;
+        }
+        else
+        {
+            head->prev = temp;
+        }
+
+        head = temp;
+        size++;
+    }
+
+    void insert(T data, int p)
+    {
+        if(p == 0)
+        {
+            push_front(data);
+        }
+
+        if(p == size)
+        {
+            push_back(data);
+        }
+
+        Nod* newNod = new Nod{data, NULL , NULL};
+        Nod* temp = head;
+        for(int i=0 ; i<p ; i++)
+        {
+            temp = temp->next;
+        }
+
+        newNod->next = temp;
+        temp->prev->next = newNod;
+        newNod->prev = temp->prev;
+        temp->prev = newNod;
+
+        size++;
+
+    }
+
+    T &operator[](int index)
+    {
+        Nod *temp = head;
+
+        for(int i = 0; i < index; i++)
+        {
+            temp = temp->next;
+        }
+
+        return temp->info;
+    }
+
+};
+
+void vecini()
+{
+    int m, n;
+    cin >> m;
+    cin >> n;
+    DoubleList<int> list;
+
+    for(int i = 0; i < n; i++)
+    {
+        int data;
+        cin >> data;
+        list.push_back(data);
+    }
+
+    for(int i = 0; i < m; i++)
+    {
+        list[0] += list[1];
+
+        for(int j = 1; j < list.getSize()-1; j++)
+        {
+            list[j] += list[j-1] + list[j+1];
+        }
+
+        list[list.getSize()-1] += list[list.getSize()-2];
+    }
+
+    for(int i = 0; i < list.getSize(); i++)
+    {
+        cout << list[i] << " ";
+    }
+    cout << endl;
+}
+
+
+int main(){
+
+    vecini();
+
+    return 0;
+}

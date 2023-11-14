@@ -5,7 +5,8 @@ using namespace std;
 /*
 1.Vom aduna vecinii fiecarui element.
 Se citeste de la tastatura m-numarul de runde pe care le vom simula, apoi n-dimensiunea listei, urmat de n elemente care reprezinta elementele intiale.
-Pentru fiecare element din lista, vom aduna cu el insusi vecinii lui.Dupa ce am facut asta de m ori, vom afisa lista finala.
+Pentru fiecare element din lista, vom aduna cu el insusi vecinii lui. Adunarea se va face de la stanga la dreapta.
+Dupa ce am facut asta de m ori, vom afisa lista finala.
 
 2.Vom gasi intr-o lista perechea de elemente care au suma o valoare data.
 Se citeste de la tastatura n-dimensiunea listei, urmat de n elemente care reprezinta elementele listei.

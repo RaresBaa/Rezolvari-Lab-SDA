@@ -1,0 +1,134 @@
+#include <iostream>
+
+using namespace std;
+
+/*
+1.Vom aduna vecinii fiecarui element.
+Se citeste de la tastatura m-numarul de runde pe care le vom simula, apoi n-dimensiunea listei, urmat de n elemente care reprezinta elementele intiale.
+Pentru fiecare element din lista, vom aduna cu el insusi vecinii lui. Adunarea se va face de la stanga la dreapta.
+Dupa ce am facut asta de m ori, vom afisa lista finala.
+
+2.Vom gasi intr-o lista perechea de elemente care au suma o valoare data.
+Se citeste de la tastatura n-dimensiunea listei, urmat de n elemente care reprezinta elementele listei.
+Se citeste de la tastatura o valoare x.
+Trebuie sa gasim o pereche de elemente din lista care au suma egala cu x.
+Vom afisa elementele din pereche.
+
+3.Vom pune elementele pare la inceputul listei, iar elementele impare la final.
+Se citeste de la tastatura n-dimensiunea listei, urmat de n elemente care reprezinta elementele listei.
+Vom afisa lista dupa ce am pus elementele pare la inceputul listei, iar elementele impare la final.
+
+4. Folosind algoritmul slow si fast pointer, vom gasi elementul din mijlocul listei.
+Se citeste de la tastatura n-dimensiunea listei, urmat de n elemente care reprezinta elementele listei.
+Vom afisa elementul din mijlocul listei.
+
+Alte exemple de probleme:
+- rotim lista cu k pozitii
+- stergem elementele din lista care se repeta
+- stergem elementele din lista care sunt mai mari decat media elementelor din lista
+
+De asemenea, putem implementa toate operatiile pentru o lista:
+-push_back()
+-pop_back()
+-push_front()
+-pop_front()
+-insert()
+-erase()
+-getSize()
+-operatorul []
+ */
+
+template <typename T>
+
+class List
+{
+private:
+
+    struct Nod
+    {
+        T info;
+        Nod* next;
+        Nod* prev;
+    };
+    int size;
+    Nod* first;
+    Nod* last;
+
+public:
+
+    List()
+    {
+        size = 0;
+        first = nullptr;
+        last = nullptr;
+    }
+
+    ~List()
+    {
+        Nod* temp = first;
+        while(temp != nullptr)
+        {
+            Nod* todelete;
+            todelete=temp;
+            temp=temp->next;
+            delete todelete;
+        }
+    }
+
+    int getSize()
+    {
+        return size;
+    }
+
+    void push_back(T data) {
+        Nod *temp = new Nod{data, nullptr, last};
+
+        if (first == nullptr) {
+            first = temp;
+        } else {
+            last->next = temp;
+        }
+
+        last = temp;
+
+        size++;
+    }
+
+    T& operator[](int index){
+        Nod* parcurgere = first;
+        for(int i =0;i<index;i++){
+            parcurgere = parcurgere->next;
+        }
+        return parcurgere->info;
+    }
+};
+
+void sumavecini(){
+    int m,n;
+    cin>>m>>n;
+    List<int> l;
+    for(int i=0;i<n;i++){
+        int var;
+        cin>>var;
+        l.push_back(var);
+    }
+
+    for(int i=0;i<m;i++){
+        l[0]=l[0]+l[1];
+
+        for(int j=1;j<n-1;j++)
+        {
+            l[j]=l[j-1]+l[j]+l[j+1];
+        }
+        l[n-1]=l[n-1]+l[n-2];
+    }
+
+    for(int i=0;i<l.getSize();i++){
+        cout<<l[i]<<" ";
+    }
+}
+
+int main(){
+    sumavecini();
+    return 0;
+}
