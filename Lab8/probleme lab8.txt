@@ -1,0 +1,435 @@
+#include <iostream>
+
+using namespace std;
+
+/*
+1.Vom gasi intr-o lista perechea de elemente care au suma o valoare data.
+Se citeste de la tastatura n-dimensiunea listei, urmat de n elemente care reprezinta elementele listei.
+Se citeste de la tastatura o valoare x.
+Trebuie sa gasim o pereche de elemente din lista care au suma egala cu x.
+Vom afisa elementele din pereche.
+
+2.Vom pune elementele pare la inceputul listei, iar elementele impare la final.
+Se citeste de la tastatura n-dimensiunea listei, urmat de n elemente care reprezinta elementele listei.
+Vom afisa lista dupa ce am pus elementele pare la inceputul listei, iar elementele impare la final.
+
+3. Folosind algoritmul slow si fast pointer, vom determina daca o lista este circulara.
+
+4. Rotim lista cu k pozitii spre stanga.
+Se citeste de la tastatura k-numarul de pozitii rotite, n-dimensiunea listei, urmat de n elemente care reprezinta elementele listei.
+Vom afisa lista dupa ce am rotit-o cu k pozitii spre stanga.
+
+5. Stergem elementele mai mari decat media elementelor din lista.
+Se citeste de la tastatura n-dimensiunea listei, urmat de n elemente care reprezinta elementele listei.
+Vom afisa lista dupa ce am sters elementele mai mari decat media elementelor din lista.
+
+6. Stergem elementele din lista care se repeta.
+Se citeste de la tastatura n-dimensiunea listei, urmat de n elemente care reprezinta elementele listei.
+Vom afisa lista dupa ce am sters elementele care se repeta.
+
+De asemenea, putem implementa toate operatiile pentru o lista:
+-push_back()
+-pop_back()
+-push_front()
+-pop_front()
+-insert()
+-erase()
+-getSize()
+-operatorul []
+ */
+
+
+// Trebuie declarata inainte pentru a putea folosi friend in clasa Node
+template <typename T>
+class DoubleList;
+
+// Clasa Node este definita inainte pentru a putea fi folosita in clasa DoubleList
+template <typename T>
+class Node {
+private:
+    T data;
+    Node<T>* next;
+    Node<T>* prev;
+
+    //pentru template-uri trebuie adaugat <T>
+    friend class DoubleList<T>;
+
+public:
+    // Constructor pentru fiecare nod
+    Node(T val) : data(val), next(nullptr), prev(nullptr) {}
+};
+
+template <typename T>
+class DoubleList {
+private:
+    Node<T>* head;
+    Node<T>* tail;
+    int size;
+public:
+    // Constructor pentru lista
+    DoubleList() : head(nullptr), tail(nullptr), size(0) {}
+
+    ~DoubleList() {
+        for (int i = 0; i < size; i++) {
+            Node <T> *toDelete = head;
+            head = head->next;
+            delete toDelete;
+        }
+    }
+
+    int getSize(){
+        return size;
+    }
+
+    void push_back(T data){
+        Node<T>* newNode = new Node<T>(data);
+        if (head == nullptr){
+            head = newNode;
+            tail = newNode;
+        }else{
+            tail->next = newNode;
+            newNode->prev = tail;
+            tail = newNode;
+        }
+        size++;
+    }
+
+    void push_front(T data){
+        Node<T>* newNode = new Node<T>(data);
+        if (head == nullptr){
+            head = newNode;
+            tail = newNode;
+        }else{
+            newNode->next = head;
+            head->prev = newNode;
+            head = newNode;
+        }
+        size++;
+    }
+
+    T pop_back(){
+        Node<T>* temp = tail;
+        T data = temp->data;
+        tail = tail->prev;
+        if (tail != nullptr){
+            tail->next = nullptr;
+        }else{
+            head = nullptr;
+        }
+        delete temp;
+        size--;
+        return data;
+    }
+
+    T pop_front(){
+        Node<T>* temp = head;
+        T data = temp->data;
+        head = head->next;
+        if (head != nullptr){
+            head->prev = nullptr;
+        }else{
+            tail = nullptr;
+        }
+        delete temp;
+        size--;
+        return data;
+    }
+
+    void insert(T data, int index){
+        if (index == 0){
+            push_front(data);
+            return;
+        }
+        if (index == size){
+            push_back(data);
+            return;
+        }
+        Node<T>* newNode = new Node<T>(data);
+        Node<T>* temp = head;
+        for(int i=0; i<index-1; i++){
+            temp = temp->next;
+        }
+        newNode->next = temp->next;
+        newNode->prev = temp;
+        temp->next->prev = newNode;
+        temp->next = newNode;
+        size++;
+    }
+
+    T erase(int index){
+        if (index == 0){
+            return pop_front();
+        }
+        if (index == size-1){
+            return pop_back();
+        }
+        Node<T>* temp = head;
+        for(int i=0; i<index; i++){
+            temp = temp->next;
+        }
+        T data = temp->data;
+        temp->prev->next = temp->next;
+        temp->next->prev = temp->prev;
+        delete temp;
+        size--;
+        return data;
+    }
+
+    T& operator[](int index){
+        Node<T>* temp = head;
+        for(int i=0; i<index; i++){
+            temp = temp->next;
+        }
+        return temp->data;
+    }
+
+    void makeCircular(){
+        //pentru a face lista circulara trebuie sa legam tail de head
+        tail->next = head;
+        head->prev = tail;
+    }
+
+    bool checkCircular(){
+        //verificam daca lista este circulara
+        //folosind slow, fast pointer
+        Node<T>* slow = head;
+        Node<T>* fast = head;
+        while(fast != nullptr && fast->next != nullptr){
+            slow = slow->next;
+            fast = fast->next->next;
+            if (slow == fast){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    void rotateLeft(int k) {
+        Node<T>* elemCurent = head;
+        for (int i = 0; i < k - 1; ++i) {
+            elemCurent = elemCurent->next;
+        }
+        //transformam lista intr-una circulara temporar
+        tail->next = head;
+        head->prev = tail;
+        //noul head va fi elementul de pe pozitia k
+        head = elemCurent->next;
+        //noul tail va fi elementul de pe pozitia k-1
+        elemCurent->next->prev = nullptr;
+        //elementul de pe pozitia k-1 va fi noul tail
+        tail = elemCurent;
+        //transformam lista inapoi in una non-circulara
+        tail->next = nullptr;
+    }
+};
+
+void testDoubleList(){
+#define print cout<<"\n\tNoua lista: ";for(int i=0; i<l.getSize(); i++){cout<<l[i]<<" ";}
+    DoubleList<int> l;
+    cout<< "Test push_back:";
+    for(int i=0; i<20; i++){
+        l.push_back(i);
+    }
+    print
+    cout<<"\nTest pop_back, 5 elem: \n\t";
+    for(int i=0; i<5; i++){
+        cout<< l.pop_back()<<" ";
+    }
+    print
+    cout<<"\nTest push_front:";
+    l.push_front(1000);
+    print
+    cout<<"\nTest insert, index 5:";
+    l.insert(2000, 5);
+    print
+    cout<<"\nTest pop_front, 5 elem: \n\t";
+    for(int i=0; i<5; i++){
+        cout<< l.pop_front()<<" ";
+    }
+    print
+    cout<<"\nTest erase, index 5:";
+    l.erase(5);
+    print
+    cout<<"\nTest checkCircular pentru non-circular:"<< l.checkCircular();
+    l.makeCircular();
+    cout<<"\nTest checkCircular:"<< l.checkCircular();
+    cout<<"\nTest circular, operator[size + 5]:"<< l[l.getSize() + 5]<<"\nTest push_back:";
+    for(int i=0; i<20; i++){
+        l.push_back(i);
+    }
+    print
+    cout<<"\nTest pop_back, 5 elem: \n\t";
+    for(int i=0; i<5; i++){
+        cout<< l.pop_back()<<" ";
+    }
+    print
+    cout<<"\nTest push_front:";
+    l.push_front(1000);
+    print
+    cout<<"\nTest insert, index 5:";
+    l.insert(2000, 5);
+    print
+    cout<<"\nTest pop_front, 5 elem: \n\t";
+    for(int i=0; i<5; i++){
+        cout<< l.pop_front()<<" ";
+    }
+    print
+    cout<<"\nTest erase, index 5:";
+    l.erase(5);
+    print
+}
+
+void perecheSuma() {
+    /*
+Vom gasi intr-o lista perechea de elemente care au suma o valoare data.
+Se citeste de la tastatura n-dimensiunea listei, urmat de n elemente care reprezinta elementele listei.
+Se citeste de la tastatura o valoare x.
+Trebuie sa gasim o pereche de elemente din lista care au suma egala cu x.
+Vom afisa elementele din pereche.
+     */
+    int n, x;
+    cin >> n;
+    DoubleList<int> l;
+    for (int i = 0; i < n; i++) {
+        int data;
+        cin >> data;
+        l.push_back(data);
+    }
+    cin >> x;
+    //vom parcurge lista si pentru fiecare element, vom cauta in lista un element care sa aiba suma cu el egala cu x
+    for (int i = 0; i < l.getSize(); i++) {
+        int cautat = x - l[i];
+        for (int j = 0; j < l.getSize(); j++) {
+            if (l[j] == cautat) {
+                cout << l[i] << " " << l[j];
+                return;
+            }
+        }
+    }
+}
+
+void parImpar(){
+    /*
+Vom pune elementele pare la inceputul listei, iar elementele impare la final.
+Se citeste de la tastatura n-dimensiunea listei, urmat de n elemente care reprezinta elementele listei.
+Vom afisa lista dupa ce am pus elementele pare la inceputul listei, iar elementele impare la final.
+        */
+    int n;
+    cin>>n;
+    DoubleList<int> l;
+    for(int i=0; i<n; i++){
+        int data;
+        cin>>data;
+        l.push_back(data);
+    }
+    //vom parcurge lista si pentru fiecare element, il vom muta la inceputul listei daca e par
+    //ca sa pastram ordinea elementelor, putem adauga un contor
+    //care sa retina cate elemente am mutat la inceputul listei
+    int contorPar = 0;
+    for(int i=0; i<l.getSize(); i++){
+        if(l[i] % 2 == 0){
+            //daca elementul e par, il mutam la inceputul listei
+            l.insert(l[i], contorPar);
+            //stergem elementul de la vechea pozitie
+            l.erase(i+1);
+            contorPar++;
+        }
+    }
+
+    //afisam lista
+    for(int i=0; i<l.getSize(); i++){
+        cout<<l[i]<<" ";
+    }
+}
+
+void rotateLeft(){
+    /*
+Rotim lista cu k pozitii spre stanga.
+Se citeste de la tastatura k-numarul de pozitii rotite, n-dimensiunea listei, urmat de n elemente care reprezinta elementele listei.
+Vom afisa lista dupa ce am rotit-o cu k pozitii spre stanga.
+     */
+    int k, n;
+    cin>>k>>n;
+    DoubleList<int> l;
+    for(int i=0; i<n; i++){
+        int data;
+        cin>>data;
+        l.push_back(data);
+    }
+    //vom roti lista cu k pozitii spre stanga
+    l.rotateLeft(k);
+    //afisam lista
+    for(int i=0; i<l.getSize(); i++){
+        cout<<l[i]<<" ";
+    }
+}
+
+void stergeMedie() {
+/*
+Stergem elementele mai mari decat media elementelor din lista.
+Se citeste de la tastatura n-dimensiunea listei, urmat de n elemente care reprezinta elementele listei.
+Vom afisa lista dupa ce am sters elementele mai mari decat media elementelor din lista.
+ */
+    int n;
+    cin >> n;
+    DoubleList<int> l;
+    for (int i = 0; i < n; i++) {
+        int data;
+        cin >> data;
+        l.push_back(data);
+    }
+    //calculam media elementelor din lista
+    int suma = 0;
+    for (int i = 0; i < l.getSize(); i++) {
+        suma += l[i];
+    }
+    int media = suma / l.getSize();
+    //vom parcurge lista si vom sterge elementele mai mari decat media
+    for (int i = 0; i < l.getSize(); i++) {
+        if (l[i] > media) {
+            l.erase(i);
+            i--;
+        }
+    }
+    //afisam lista
+    for (int i = 0; i < l.getSize(); i++) {
+        cout << l[i] << " ";
+    }
+}
+
+void stergeDuplicate(){
+    /*
+Stergem elementele din lista care se repeta.
+Se citeste de la tastatura n-dimensiunea listei, urmat de n elemente care reprezinta elementele listei.
+Vom afisa lista dupa ce am sters elementele care se repeta.
+     */
+    int n;
+    cin>>n;
+    DoubleList<int> l;
+    for(int i=0; i<n; i++){
+        int data;
+        cin>>data;
+        l.push_back(data);
+    }
+
+    //parcurgem lista si cautam duplicate
+    for(int i=0; i<l.getSize(); i++){
+        for(int j=i+1; j<l.getSize(); j++){
+            if(l[i] == l[j]){
+                //daca am gasit un duplicate, il stergem
+                l.erase(j);
+                j--;
+            }
+        }
+    }
+
+    //afisam lista
+    for(int i=0; i<l.getSize(); i++){
+        cout<<l[i]<<" ";
+    }
+}
+
+int main() {
+    testDoubleList();
+    return 0;
+}

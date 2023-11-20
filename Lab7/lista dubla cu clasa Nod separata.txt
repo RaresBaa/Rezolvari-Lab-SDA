@@ -8,7 +8,7 @@ Logica nodurilor nu se schimba fata de implementarea cu o structura in interioru
 Aici trebuie sa mai facem un constructor pentru clasa de Node si sa adaugam friend class DoubleList<T>
  */
 
-// Trebuie declarata inainte pentru a putea folo friend in clasa Node
+// Trebuie declarata inainte pentru a putea folosi friend in clasa Node
 template <typename T>
 class DoubleList;
 
