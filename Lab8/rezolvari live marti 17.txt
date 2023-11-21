@@ -1,0 +1,348 @@
+#include <iostream>
+
+using namespace std;
+
+/*
+1.Vom gasi intr-o lista perechea de elemente care au suma o valoare data.
+Se citeste de la tastatura n-dimensiunea listei, urmat de n elemente care reprezinta elementele listei.
+Se citeste de la tastatura o valoare x.
+Trebuie sa gasim o pereche de elemente din lista care au suma egala cu x.
+Vom afisa elementele din pereche.
+
+2.Vom pune elementele pare la inceputul listei, iar elementele impare la final.
+Se citeste de la tastatura n-dimensiunea listei, urmat de n elemente care reprezinta elementele listei.
+Vom afisa lista dupa ce am pus elementele pare la inceputul listei, iar elementele impare la final.
+
+3. Folosind algoritmul slow si fast pointer, vom determina daca o lista este circulara.
+
+4. Rotim lista cu k pozitii spre stanga.
+Se citeste de la tastatura k-numarul de pozitii rotite, n-dimensiunea listei, urmat de n elemente care reprezinta elementele listei.
+Vom afisa lista dupa ce am rotit-o cu k pozitii spre stanga.
+
+5. Stergem elementele mai mari decat media elementelor din lista.
+Se citeste de la tastatura n-dimensiunea listei, urmat de n elemente care reprezinta elementele listei.
+Vom afisa lista dupa ce am sters elementele mai mari decat media elementelor din lista.
+
+6. Stergem elementele din lista care se repeta.
+Se citeste de la tastatura n-dimensiunea listei, urmat de n elemente care reprezinta elementele listei.
+Vom afisa lista dupa ce am sters elementele care se repeta.
+
+De asemenea, putem implementa toate operatiile pentru o lista:
+-push_back()
+-pop_back()
+-push_front()
+-pop_front()
+-insert()
+-erase()
+-getSize()
+-operatorul []
+ */
+
+
+// Trebuie declarata inainte pentru a putea folosi friend in clasa Node
+template <typename T>
+class DoubleList;
+
+// Clasa Node este definita inainte pentru a putea fi folosita in clasa DoubleList
+template <typename T>
+class Node {
+private:
+    T data;
+    Node<T>* next;
+    Node<T>* prev;
+
+    //pentru template-uri trebuie adaugat <T>
+    friend class DoubleList<T>;
+
+public:
+    // Constructor pentru fiecare nod
+    Node(T val) : data(val), next(nullptr), prev(nullptr) {}
+};
+
+template <typename T>
+class DoubleList {
+private:
+    Node<T>* head;
+    Node<T>* tail;
+    int size;
+public:
+    // Constructor pentru lista
+    DoubleList() : head(nullptr), tail(nullptr), size(0) {}
+
+    ~DoubleList() {
+        for (int i = 0; i < size; i++) {
+            Node <T> *toDelete = head;
+            head = head->next;
+            delete toDelete;
+        }
+    }
+
+    int getSize(){
+        return size;
+    }
+
+    void push_back(T data){
+        Node<T>* newNode = new Node<T>(data);
+        if (head == nullptr){
+            head = newNode;
+            tail = newNode;
+        }else{
+            tail->next = newNode;
+            newNode->prev = tail;
+            tail = newNode;
+        }
+        size++;
+    }
+
+    void push_front(T data){
+        Node<T>* newNode = new Node<T>(data);
+        if (head == nullptr){
+            head = newNode;
+            tail = newNode;
+        }else{
+            newNode->next = head;
+            head->prev = newNode;
+            head = newNode;
+        }
+        size++;
+    }
+
+    T pop_back(){
+        Node<T>* temp = tail;
+        T data = temp->data;
+        tail = tail->prev;
+        if (tail != nullptr){
+            tail->next = nullptr;
+        }else{
+            head = nullptr;
+        }
+        delete temp;
+        size--;
+        return data;
+    }
+
+    T pop_front(){
+        Node<T>* temp = head;
+        T data = temp->data;
+        head = head->next;
+        if (head != nullptr){
+            head->prev = nullptr;
+        }else{
+            tail = nullptr;
+        }
+        delete temp;
+        size--;
+        return data;
+    }
+
+    void insert(T data, int index){
+        if (index == 0){
+            push_front(data);
+            return;
+        }
+        if (index == size){
+            push_back(data);
+            return;
+        }
+        Node<T>* newNode = new Node<T>(data);
+        Node<T>* temp = head;
+        for(int i=0; i<index-1; i++){
+            temp = temp->next;
+        }
+        newNode->next = temp->next;
+        newNode->prev = temp;
+        temp->next->prev = newNode;
+        temp->next = newNode;
+        size++;
+    }
+
+    T erase(int index){
+        if (index == 0){
+            return pop_front();
+        }
+        if (index == size-1){
+            return pop_back();
+        }
+        Node<T>* temp = head;
+        for(int i=0; i<index; i++){
+            temp = temp->next;
+        }
+        T data = temp->data;
+        temp->prev->next = temp->next;
+        temp->next->prev = temp->prev;
+        delete temp;
+        size--;
+        return data;
+    }
+
+    T& operator[](int index){
+        Node<T>* temp = head;
+        for(int i=0; i<index; i++){
+            temp = temp->next;
+        }
+        return temp->data;
+    }
+
+    void makeCircular(){
+        //pentru a face lista circulara trebuie sa legam tail de head
+        tail->next = head;
+        head->prev = tail;
+    }
+
+    bool checkCircular(){
+        Node<T>* fastP = head;
+        Node<T>* slowP = head;
+
+        while(fastP != nullptr && fastP->next != nullptr)
+        {
+            fastP = fastP->next->next;
+            slowP = slowP->next;
+           if(fastP == slowP)
+                return true;
+        }
+        return false;
+    }
+    void rotate(int k)
+    {
+        Node<T>* temp = head;
+        for(int i=0;i<k-1;i++)
+        {
+            temp=temp->next;
+        }
+        makeCircular();
+        head=temp->next;
+        head->prev=nullptr;
+        tail=temp;
+        tail->next=nullptr;
+    }
+};
+
+void rotatieK()
+{
+    DoubleList<int> l;
+    int k,n,x;
+    cin >> k >> n;
+    for(int i=0;i<n;i++)
+    {
+        cin >> x;
+        l.push_back(x);
+    }
+
+    l.rotate(k);
+    for(int i=0;i<n;i++)
+    {
+        cout << l[i] << ' ';
+    }
+}
+
+void perechesuma(){
+    DoubleList<int> l;
+    int x,n,y;
+    cin>>x>>n;
+    for(int i=0;i<n;i++)
+    {
+        cin>>y;
+        l.push_back(y);
+    }
+    for(int i=0;i<l.getSize();i++){
+        int dif=x-l[i];
+        for(int j=i+1;j<l.getSize();j++){
+            if(dif==l[j])
+            {
+                cout<<l[i]<<' '<<l[j]<<endl;
+            }
+        }
+    }
+}
+
+void inserarepar(){
+    int n;
+    cin>>n;
+
+    DoubleList <int> lista;
+
+    for(int i=0; i<n; i++)
+    {
+        int tmp;
+        cin>>tmp;
+        lista.push_back(tmp);
+    }
+    int j=0;
+
+    for(int i=0; i<lista.getSize(); i++)
+    {
+        if(lista[i]%2==0)
+        {
+            int tmp;
+            tmp=lista.erase(i);
+            lista.insert(tmp, j);
+            j++;
+        }
+    }
+
+    for(int i=0; i<lista.getSize();i++ ) {
+        cout << lista[i]<< " ";
+    }
+}
+
+void stergeduplciate(){
+    DoubleList<int> l;
+    int n,x;
+    cin >> n;
+    for(int i=0;i<n;i++)
+    {
+        cin >> x;
+        l.push_back(x);
+    }
+
+    for(int i=0;i<l.getSize();i++)
+    {
+        for(int j=i+1;j<l.getSize();j++)
+        {
+            if(l[i]==l[j])
+            {
+                l.erase(j);
+                j--;
+            }
+        }
+
+    }
+
+    for(int i=0;i<l.getSize();i++)
+    {
+        cout << l[i] << ' ';
+    }
+}
+
+void stergepestemedie(){
+    int n, s=0, m;
+    cin>>n;
+    DoubleList<int> l;
+    for(int i=0;i<n;i++){
+        int data;
+        cin>>data;
+        s+=data;
+        l.push_back(data);
+    }
+
+    m=s/n;
+
+    for(int i=0; i<l.getSize(); i++)
+    {
+        if(l[i]<m)
+        {
+            l.erase(i);
+            i--;
+        }
+
+    }
+
+    for(int i=0;i<l.getSize();i++){
+        cout<<l[i]<<" ";
+    }
+}
+
+int main(){
+    stergepestemedie();
+    return 0;
+}
