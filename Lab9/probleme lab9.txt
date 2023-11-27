@@ -1,0 +1,256 @@
+#include <iostream>
+#include <cmath>
+
+using namespace std;
+
+/*
+ *  Implementati un arbore binar static, cu un vector de dimensiune fixa.
+ *  Implementati operatii de inserare, parcurgere in preordine, inordine, postordine si pe nivel.
+ *  Implementati operatii de cautare a unui element, de determinare a inaltimii,
+ *  de determinare a fratilor si a descendentilor.
+ *
+ *  Exemple probleme:
+ *   1. Se citeste angajatul cautat(in mod normal string dar vom folosi int pentru id), n, n angajati si ierarhia lor, sa se afiseze toti subordonatii angajatului cautat.
+ *   2. Se citeste n, n elemente intregi si ierarhia lor, sa se afiseze suma nodurilor care nu au subnoduri.
+ *   3. Se citeste n, n elemente intregi si ierarhia lor, sa se afiseze suma nodurilor care au subnoduri.
+ *   4. Se citeste n, n elemente intregi si ierarhia lor, sa se afiseze indexurile nodurilor care au un singur subnod.
+ */
+
+/*
+ *      1
+ *   2     3
+ *  4  5
+ *
+ *  In ordine: 4 2 5 1 3
+ *  Pre ordine: 1 2 4 5 3
+ *  Post ordine: 4 5 2 3 1
+ *  Nivel ordine: 1 2 3 4 5
+ */
+
+#define MAX_SIZE 100
+#define EMPTY NULL
+
+template<typename T>
+class StaticTree{
+private:
+    T treeArr[MAX_SIZE];
+    int size;
+
+public:
+    StaticTree(){
+        size = 0;
+        for(int i = 0; i < MAX_SIZE; i++)
+            treeArr[i] = EMPTY;
+    }
+
+    ~StaticTree(){
+        size = 0;
+    }
+
+    void insert(T value, int index){
+        if(index >= MAX_SIZE || index < 0)
+            return;
+        treeArr[index] = value;
+        if(index > size)
+            size = index;
+    }
+
+    T& operator[](int index){
+        if(index >= MAX_SIZE || index < 0)
+            return treeArr[0];
+        return treeArr[index];
+    }
+
+    void printPreOrder(int index){
+        if(index >= MAX_SIZE || index < 0)
+            return;
+        if(treeArr[index] != EMPTY)
+            cout << treeArr[index] << " ";
+        printPreOrder(index * 2 + 1);
+        printPreOrder(index * 2 + 2);
+    }
+
+    void printInOrder(int index){
+        if(index >= MAX_SIZE || index < 0)
+            return;
+        printInOrder(index * 2 + 1);
+        if(treeArr[index] != EMPTY)
+            cout << treeArr[index] << " ";
+        printInOrder(index * 2 + 2);
+    }
+
+    void printPostOrder(int index){
+        if(index >= MAX_SIZE || index < 0)
+            return;
+        printPostOrder(index * 2 + 1);
+        printPostOrder(index * 2 + 2);
+        if(treeArr[index] != EMPTY)
+            cout << treeArr[index] << " ";
+    }
+
+    void printLevelOrder(int index){
+        if(index >= MAX_SIZE || index < 0)
+            return;
+        for(int i = 0; i < size; i++)
+            cout << treeArr[i] << " ";
+    }
+
+    void printFullArray(){
+        for(int i = 0; i < MAX_SIZE; i++)
+            cout << treeArr[i] << " ";
+
+    }
+
+    int getHeight(){
+        return ceil(log2(size + 1));
+    }
+
+    bool areSiblings(int index1, int index2){
+        if(index1 >= MAX_SIZE || index1 < 0 || index2 >= MAX_SIZE || index2 < 0 || index1 == index2)
+            return false;
+
+        if(index1 % 2 == 0)
+            return index1 - 1 == index2;
+        else
+            return index1 + 1 == index2;
+    }
+
+    bool isDescendant(int index1, int index2){
+        if(index1 >= MAX_SIZE || index1 < 0 || index2 >= MAX_SIZE || index2 < 0 || index1 == index2)
+            return false;
+
+        if(index1 % 2 == 0)
+            return index1 / 2 - 1 == index2;
+        else
+            return index1 / 2 == index2;
+    }
+
+    void printTree() {
+        //pentru fiecare nivel, exista 2^nivel noduri
+        int level = 0;
+        int nodes = 1;
+        int index = 0;
+        while (index <= size) {
+            for (int i = 0; i < nodes; i++) {
+                cout << treeArr[index] << " ";
+                index++;
+            }
+            cout << endl;
+            nodes *= 2;
+            level++;
+        }
+    }
+
+    int search(T value){
+        for(int i = 0; i < MAX_SIZE; i++)
+            if(treeArr[i] == value)
+                return i;
+        return -1;
+    }
+
+    bool isLeaf(int index){
+        if(index >= MAX_SIZE || index < 0)
+            return false;
+        return treeArr[index * 2 + 1] == EMPTY && treeArr[index * 2 + 2] == EMPTY;
+    }
+};
+
+#define ins(x, y) tree.insert(x, y)
+#define populate ins(1, 0); ins(2, 1); ins(3, 2); ins(4, 3); ins(5, 4); ins(6, 7); ins(7, 8); ins(8, 6); ins(9, 14);
+void testTree(){
+    StaticTree<int> tree;
+    populate
+
+    cout<<"Tree: "<<endl;
+    tree.printTree();
+
+    cout << "Pre Order: ";
+    tree.printPreOrder(0);
+    cout << endl;
+
+    cout << "In Order: ";
+    tree.printInOrder(0);
+    cout << endl;
+
+    cout << "Post Order: ";
+    tree.printPostOrder(0);
+    cout << endl;
+
+    cout << "Level Order: ";
+    tree.printLevelOrder(0);
+    cout << endl;
+
+    cout << "Full Array: ";
+    tree.printFullArray();
+    cout << endl;
+
+    cout << "Height: " << tree.getHeight() << endl;
+
+    cout << "Are siblings 3, 4: " << tree.areSiblings(3, 4) << endl;
+    cout << "Are siblings 3, 8: " << tree.areSiblings(3, 8) << endl;
+
+    cout << "Is descendant 3, 1: " << tree.isDescendant(3, 1) << endl;
+    cout << "Is descendant 3, 2: " << tree.isDescendant(3, 2) << endl;
+
+    cout << "Search 9: " << tree.search(9) << endl;
+
+}
+
+void employeeSubordinates(){
+    //1. Se citeste angajatul cautat(in mod normal string dar vom folosi int pentru id), n, n angajati si ierarhia lor,
+    // sa se afiseze toti subordonatii angajatului cautat.
+    int n;
+    int semi_boss;
+    StaticTree<int> tree;
+    cin>>semi_boss;
+    /* in mod normal se citeste de la tastatura, dar pentru a nu fi nevoie sa introducem de fiecare data
+     * vom folosi o functie care insereaza automat elementele in arbore
+    cin >> n;
+    for(int i = 0; i < n; i++){
+        int empl;
+        int index;
+        cin >> empl >> index;
+        tree.insert(empl, index);
+    }
+     */
+    populate
+
+    tree.printTree();
+    cout << "Subordinates of " << semi_boss << ": ";
+    int index = tree.search(semi_boss);
+    if(index == -1){
+        cout << "Employee not found!" << endl;
+        return;
+    }
+    tree.printPreOrder(index);
+}
+
+void sumLeafs(){
+    //2. Se citeste n, n elemente intregi si ierarhia lor, sa se afiseze suma nodurilor care nu au subnoduri.
+    int n;
+    StaticTree<int> tree;
+    /* in mod normal se citeste de la tastatura, dar pentru a nu fi nevoie sa introducem de fiecare data
+     * vom folosi o functie care insereaza automat elementele in arbore
+    cin >> n;
+    for(int i = 0; i < n; i++) {
+        int elem;
+        int index;
+        cin >> elem >> index;
+        tree.insert(elem, index);
+    }
+     */
+    populate
+    tree.printTree();
+
+    int sum = 0;
+    for(int i = 0; i < MAX_SIZE; i++)
+        if(tree.isLeaf(i))
+            sum += tree[i];
+
+    cout << "Sum of leafs: " << sum << endl;
+}
+
+int main(){
+    testTree();
+    return 0;
+}
