@@ -14,15 +14,18 @@ class Node{
 
     Node<T>* eraseLeftLeaf(T& elem){
         if(left)
+            //mergem recursiv in stanga
             left = left->eraseLeftLeaf(elem);
         else{
-            Node* temp;
+            //stocam valorea nodului care trebuie sters
             elem = data;
             if(right){
-                temp = right;
+                //daca exista nod in dreapta, il stergem si returnam nodul curent
+                Node* temp = right;
                 delete this;
                 return temp;
             }
+            //daca nu exista nod in dreapta, stergem nodul curent si returnam nullptr
             delete this;
             return nullptr;
         }
@@ -43,7 +46,6 @@ public:
     ~Node(){
         delete left;
         delete right;
-        delete this;
     }
 
     friend class BinaryTree<T>;
@@ -58,6 +60,7 @@ public:
         }
 
         Node<T> *found = nullptr;
+        //parcurgem recursiv arborele
         if (left) {
             found = left->find(elem);
         }
@@ -68,37 +71,45 @@ public:
     }
 
     Node<T>* erase(T &elem){
-        //Exista 3 cazuri: nodul nu are fii, nodul are un fiu, nodul are 2 fii
+        //exista 3 cazuri: nodul este frunza, nodul are un singur fiu, nodul are 2 fii
+        //daca nodul curent este nodul care trebuie sters
         if(elem == data){
-            Node *temp = nullptr;
             if(left == nullptr && right == nullptr){
+                //daca nodul este frunza, il stergem si returnam nullptr
                 delete this;
                 return nullptr;
             }
             if(left!=nullptr && right == nullptr){
-                temp = left;
+                //daca nodul are un singur fiu, il stergem si returnam fiul
+                Node<T>* temp = left;
+                left = nullptr;
                 delete this;
                 return temp;
             }
             if(left == nullptr && right != nullptr){
-                temp = right;
+                //daca nodul are un singur fiu, il stergem si returnam fiul
+                Node<T>* temp = right;
+                right = nullptr;
                 delete this;
                 return temp;
             }
+            //daca nodul are 2 fii, cautam cel mai din dreapta nod din subarborele stang
             right = right->eraseLeftLeaf(data);
             return this;
         }
-
+        //daca nodul curent nu este nodul care trebuie sters, cautam recursiv in subarborii stang si drept
         if(elem < data){
             if(left) {
                 left = left->erase(elem);
-            }else
+            } else {
                 return nullptr;
-        }else{
+            }
+        } else {
             if(right) {
                 right = right->erase(elem);
-            }else
+            } else {
                 return nullptr;
+            }
         }
         return this;
     }
@@ -117,6 +128,8 @@ public:
     }
 
     void add_descendants(Node<T> * node){
+        //adaugam recursiv descendentii nodului curent
+        //daca citim valoarea 0, o consideram ca si cum nu ar exista nod
         T data;
         cout<<"\nFii nodului "<<node->data<<" : ";
         cout<<"\nNod stang: ";
@@ -143,6 +156,7 @@ public:
     }
 
     void treeFromKeyboard(){
+        //citim radacina si dupa folosim functia add_descendants pentru a adauga descendentii
         T data;
         if(root){
             return;
@@ -209,6 +223,8 @@ public:
     }
 
     void printLevelOrder() {
+        //ca sa putem vedea mai usor arborele.
+        //este doar un exemplu
         if (root == nullptr) {
             cout << "Tree is empty!" << endl;
             return;
@@ -234,6 +250,9 @@ public:
     }
 
     void insertBST(T data){
+        //cu aceasta functie cream un arbore binar de cautare
+
+        //daca arborele este gol, adaugam radacina
         if(root == nullptr){
             root = new Node<T>(data);
             return;
@@ -241,14 +260,18 @@ public:
 
         Node<T> *current = root;
         Node<T> *parent = nullptr;
+        //parcurgem arborele pana cand gasim un nod care nu are fiu in directia in care trebuie inserat nodul
         while(current){
             parent = current;
             if(data < current->data){
+                //daca valoarea nodului este mai mica decat valoarea nodului curent, mergem in stanga
                 current = current->left;
             }else{
+                //daca valoarea nodului este mai mare decat valoarea nodului curent, mergem in dreapta
                 current = current->right;
             }
         }
+        //adaugam nodul in functie de valoarea acestuia
         if(data < parent->data){
             parent->left = new Node<T>(data);
         }else{
