@@ -1,0 +1,264 @@
+#include <iostream>
+#include <queue>
+
+using namespace std;
+
+template<typename T>
+class BinaryTree;
+
+template<typename T>
+class Node{
+    T data;
+    Node* left;
+    Node* right;
+
+    Node<T>* eraseLeftLeaf(T& elem){
+
+    }
+public:
+    explicit Node(T data){
+        this->data = data;
+        left = right = nullptr;
+    }
+
+    Node(Node<T> *left, Node<T> *right, T data){
+        this->data = data;
+        this->left = left;
+        this->right = right;
+    }
+
+    ~Node(){
+        delete left;
+        delete right;
+    }
+
+    friend class BinaryTree<T>;
+
+    T getData(){
+        return data;
+    }
+
+    Node<T>* find(T elem) {
+        if(data == elem){
+            return this;
+        }
+
+        Node* found = nullptr;
+        if(left){
+            found = left->find(elem);
+        }
+        if(right && !found){
+            found = right->find(elem);
+        }
+        return found;
+    }
+
+    Node<T>* erase(T &elem){
+
+    }
+};
+
+template<typename T>
+class BinaryTree {
+    Node<T>* root;
+
+public:
+    BinaryTree(){
+        root = nullptr;
+    }
+    ~BinaryTree(){
+        delete root;
+    }
+
+    void add_descendants(Node<T> * node){
+        T data;
+        cout<<"Pentru nodul:"<< node->data << " introduceti:\n";
+        cout<<"Nodul stang:";
+        cin>>data;
+        if(data != 0){
+            node->left = new Node<T>(data);
+        }else{
+            node->left = nullptr;
+        }
+        cout<<"Nodul drept:";
+        cin>>data;
+        if(data != 0){
+            node->right = new Node<T>(data);
+        }else{
+            node->right = nullptr;
+        }
+
+        if(node->left){
+            add_descendants(node->left);
+        }
+        if(node->right){
+            add_descendants(node->right);
+        }
+    }
+
+    void treeFromKeyboard(){
+        if(root)
+            return;
+        cout<<"Root:";
+        T elem;
+        cin>>elem;
+        root = new Node<T>(elem);
+        add_descendants(root);
+    }
+
+    Node<T>* find(T data){
+        if(root){
+            return root->find(data);
+        }
+        return nullptr;
+    }
+
+    void printPreorder(Node<T> *node){
+        cout<<node->data<<" ";
+        if(node->left){
+            printPreorder(node->left);
+        }
+        if(node->right){
+            printPreorder(node->right);
+        }
+    }
+
+    void printInorder(Node<T> *node){
+        if(node->left){
+            printInorder(node->left);
+        }
+        cout<<node->data<<" ";
+        if(node->right){
+            printInorder(node->right);
+        }
+    }
+
+    void printPostorder(Node<T> *node){
+        if(node->left){
+            printPostorder(node->left);
+        }
+        if(node->right){
+            printPostorder(node->right);
+        }
+        cout<<node->data<<" ";
+    }
+
+    void printPreorder(){
+        if(root)
+            printPreorder(root);
+    }
+
+    void printInorder(){
+        if(root)
+            printInorder(root);
+    }
+
+    void printPostorder(){
+        if(root)
+            printPostorder(root);
+    }
+
+    void printLevelOrder() {
+        if (root == nullptr) {
+            cout << "Tree is empty!" << endl;
+            return;
+        }
+        queue<Node<T>*> nodesQueue;
+        nodesQueue.push(root);
+        while (!nodesQueue.empty()) {
+            int levelNodes = nodesQueue.size();
+            while (levelNodes > 0) {
+                Node<T>* node = nodesQueue.front();
+                nodesQueue.pop();
+                cout << node->data << " ";
+
+                if (node->left != nullptr)
+                    nodesQueue.push(node->left);
+                if (node->right != nullptr)
+                    nodesQueue.push(node->right);
+                levelNodes--;
+            }
+            cout << endl;
+        }
+    }
+
+    void insertBST(T data){
+        if(root == nullptr){
+            root = new Node<T>(data);
+            return;
+        }
+
+        Node<T> *current = root;
+        Node<T> *parent = nullptr;
+        while(current){
+            parent = current;
+            if(data < current->data){
+                current = current->left;
+            }else{
+                current = current->right;
+            }
+        }
+
+        if(data < parent->data){
+            parent->left = new Node<T>(data);
+        }else{
+            parent->right = new Node<T>(data);
+        }
+
+    }
+
+    void erase(T data){
+        if(root){
+            root->erase(data);
+        }
+    }
+
+
+};
+
+void testTree(){
+    BinaryTree<int> tree;
+    cout<<"Introduceti elementele arborelui: ";
+    tree.treeFromKeyboard();
+    cout<<"\nPreorder: ";
+    tree.printPreorder();
+    cout<<"\nInorder: ";
+    tree.printInorder();
+    cout<<"\nPostorder: ";
+    tree.printPostorder();
+    cout<<"\nLevelorder:\n ";
+    tree.printLevelOrder();
+    cout<<"\nIntroducereBST:\n";
+    tree.insertBST(10);
+    tree.insertBST(5);
+    tree.insertBST(15);
+    tree.insertBST(3);
+    tree.insertBST(7);
+    tree.insertBST(12);
+    tree.insertBST(17);
+    tree.printLevelOrder();
+    cout<<"\nFind 10: ";
+    Node<int> *node = tree.find(10);
+    if(node){
+        cout<<"Nodul "<<node->getData()<<" a fost gasit!";
+    }else{
+        cout<<"Nodul nu a fost gasit!";
+    }
+    cout<<"\nFind 100: ";
+    node = tree.find(100);
+    if(node){
+        cout<<"Nodul "<<node->getData()<<" a fost gasit!";
+    }else{
+        cout<<"Nodul nu a fost gasit!";
+    }
+    cout<<"\nStergere nod 10:\n";
+    tree.erase(10);
+    cout<<"\nLevelorder:\n ";
+    tree.printLevelOrder();
+}
+
+int main(){
+    testTree();
+    return 0;
+}
+

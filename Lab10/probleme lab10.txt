@@ -109,7 +109,21 @@ public:
                 right = right->erase(elem);
             } else {
                 return nullptr;
-            }
+            }Node<T>* find(T elem) {
+        if (this->data == elem) {
+            return this;
+        }
+
+        Node<T> *found = nullptr;
+        //parcurgem recursiv arborele
+        if (left) {
+            found = left->find(elem);
+        }
+        if (!found && right) {
+            found = right->find(elem);
+        }
+        return found;
+    }
         }
         return this;
     }
