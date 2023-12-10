@@ -1,0 +1,368 @@
+#include <iostream>
+#include <queue>
+#include <string>
+
+using namespace std;
+
+template <typename T>
+class AVLTree;
+
+template <typename T>
+class Node{
+    T data;
+    Node<T> *left;
+    Node<T> *right;
+    int height;
+
+    friend class AVLTree<T>;
+
+    int getHeight(){
+        //verificam daca exista nod in stanga si in dreapta
+        int leftHeight = left? left->height : 0;
+        int rightHeight = right? right->height : 0;
+        //returnam maximul dintre inaltimile celor doua noduri + 1
+        return (leftHeight > rightHeight? leftHeight:rightHeight) + 1;
+    }
+
+    int getBalanceFactor(){
+        //verificam daca exista nod in stanga si in dreapta
+        int leftHeight = left? left->height : 0;
+        int rightHeight = right? right->height : 0;
+        //returnam diferenta dintre inaltimile celor doua noduri
+        return leftHeight - rightHeight;
+    }
+
+    Node* rotateRight(){
+        //noul centru va fi nodul din stanga
+        Node* newCenter = left;
+        //nodul din stanga va fi nodul din dreapta al noului centru
+        left = newCenter->right;
+        //nodul din dreapta al noului centru va fi nodul de unde facem rotatia
+        newCenter->right = this;
+        //actualizam inaltimile
+        height = getHeight();
+        newCenter->height = newCenter->getHeight();
+        //returnam noul centru
+        return newCenter;
+    }
+
+    Node* rotateLeft(){
+        //asemanator cu rotateRight
+        Node* newCenter = right;
+        right = newCenter->left;
+        newCenter->left = this;
+        height = getHeight();
+        newCenter->height = newCenter->getHeight();
+        return newCenter;
+    }
+
+    Node* rotateLeftRight(){
+        //pentru particularitati numite "left-right heavy
+        //rotim mai intai nodul din stanga la stanga
+        left = left->rotateLeft();
+        //apoi rotim nodul curent la dreapta
+        return rotateRight();
+    }
+
+    Node* rotateRightLeft(){
+        //aseamanator cu rotateLeftRight
+        right = right->rotateRight();
+        return rotateLeft();
+    }
+
+    Node* balance(){
+        int balanceFactor = getBalanceFactor();
+        int oppositeBF;
+
+        if(balanceFactor > 1){
+            //daca nodul este "left heavy"
+            if(left){
+                //daca exista nod in stanga
+                oppositeBF = left->getBalanceFactor();
+                //verificam daca nodul din stanga este "left heavy" sau "right heavy"
+                if(oppositeBF > 0){
+                    //daca este "left heavy" facem o rotatie la dreapta
+                    return rotateRight();
+                }else{
+                    //daca este "right heavy" facem o rotatie la stanga-dreapta
+                    return rotateLeftRight();
+                }
+            }
+        }else if(balanceFactor < -1){
+            //daca nodul este "right heavy"
+            //aseamanator cu cazul de mai sus
+            if(right){
+                oppositeBF = right->getBalanceFactor();
+                if(oppositeBF < 0){
+                    return rotateLeft();
+                }else{
+                    return rotateRightLeft();
+                }
+            }
+        }
+        //daca nodul este echilibrat nu rotim nimic, doar actualizam inaltimea
+        height = getHeight();
+        return this;
+    }
+
+    Node<T>* eraseLeftLeaf(T& elem){
+        //mergem in stanga pana gasim un nod fara copil in stanga
+        if(left)
+            left = left->eraseLeftLeaf(elem);
+        else{
+            //daca nodul curent este nodul fara copil in stanga
+            //trimitem valoarea nodului care va fi sters prin referinta
+            elem = data;
+            if(right){
+                //daca exista nod in dreapta, il stergem si il returnam
+                Node* temp = right;
+                delete this;
+                return temp;
+            }
+            //stergem nodul curent si returnam nullptr
+            delete this;
+            return nullptr;
+        }
+        return this;
+    }
+
+public:
+    explicit Node(T data){
+        this->data = data;
+        this->left = nullptr;
+        this->right = nullptr;
+        this->height = 1;
+    }
+
+    ~Node(){
+        delete left;
+        delete right;
+    }
+
+    T getData(){
+        return data;
+    }
+
+    Node* insert(T data){
+        //daca exista deja nodul cu valoarea data, nu il mai inseram si doar returnam nodul curent
+        if(this->data == data){
+            return this;
+        }
+        //daca valoarea data este mai mica decat valoarea nodului curent
+        if(data < this->data){
+            //verificam daca exista nod in stanga
+            if(left){
+                //daca exista nod in stanga, mergem cu un nivel mai jos
+                left = left->insert(data);
+                //balansam arborele
+                return balance();
+            }else{
+                //daca nu exista nod in stanga, il inseram si actualizam inaltimea
+                left = new Node<T>(data);
+                height = getHeight();
+                return this;
+            }
+        }
+        //daca valoarea data este mai mare decat valoarea nodului curent
+        //aseamanator cu cazul de mai sus
+        if(right) {
+            right = right->insert(data);
+            return balance();
+        }else{
+            right = new Node<T>(data);
+            height = getHeight();
+            return this;
+        }
+    }
+
+    Node* erase(T data){
+        //daca nodul curent are valoarea cautata
+        if(this->data == data){
+            Node* temp;
+            if(!left && !right) {
+                //daca nodul nu are copii, il stergem si returnam nullptr
+                delete this;
+                return nullptr;
+            }
+            if(!left && right){
+                //daca nodul are doar copil in dreapta, stergem nodul si returnam copilul
+                temp = left;
+                delete this;
+                return temp;
+            }
+            if(left && !right){
+                //daca nodul are doar copil in stanga, sterem nodul si returnam copilul
+                temp = right;
+                delete this;
+                return temp;
+            }
+            //daca nodul are ambii copii, folosim functia ajutatoare eraseLeftLeaf
+            right = right->eraseLeftLeaf(data);
+            return balance();
+        }
+        //cautam recursiv nodul cu valoarea data
+        if(data < this->data) {
+            //daca exista nod in stanga, mergem cu un nivel mai jos
+            if (left) {
+                left = left->erase(data);
+            } else {
+                return nullptr;
+            }
+        }else{
+            if(right){
+                right = right->erase(data);
+            }else{
+                return nullptr;
+            }
+        }
+        return balance();
+    }
+
+    Node* search(T data){
+        //daca nodul curent are valoarea cautata, il returnam
+        if(this->data == data){
+            return this;
+        }
+        //cautam recursiv nodul cu valoarea data
+        if(data < this->data){
+            //daca exista nod in stanga, mergem cu un nivel mai jos
+            if(left){
+                return left->search(data);
+            }else{
+                return nullptr;
+            }
+        }else{
+            if(right){
+                return right->search(data);
+            }else{
+                return nullptr;
+            }
+        }
+    }
+};
+
+template <typename T>
+class AVLTree{
+    Node<T> *root;
+
+public:
+    AVLTree(){
+        root = nullptr;
+    }
+    ~AVLTree(){
+        delete root;
+    }
+
+    void insert(T data){
+        if(!root){
+            root = new Node<T>(data);
+        }else{
+            root = root->insert(data);
+        }
+    }
+
+    void erase(T data){
+        if(root){
+            root = root->erase(data);
+        }
+    }
+
+    Node<T>* search(T data){
+        if(root){
+            return root->search(data);
+        }
+        return nullptr;
+    }
+
+    void printPreorder(Node<T> *node){
+        if(node){
+            cout<<node->data<<" ";
+            if(node->left){
+                printPreorder(node->left);
+            }
+            if(node->right){
+                printPreorder(node->right);
+            }
+        }
+    }
+
+    void printPreorder(){
+        printPreorder(root);
+    }
+
+    void printLevelOrder() {
+        //ca sa putem vedea mai usor arborele.
+        //este doar un exemplu
+        if (root == nullptr) {
+            cout << "Tree is empty!" << endl;
+            return;
+        }
+        queue<Node<T>*> nodesQueue;
+        nodesQueue.push(root);
+
+        while (!nodesQueue.empty()) {
+            int levelNodes = nodesQueue.size();
+            while (levelNodes > 0) {
+                Node<T>* node = nodesQueue.front();
+                nodesQueue.pop();
+                cout << node->data << " ";
+
+                if (node->left != nullptr)
+                    nodesQueue.push(node->left);
+                if (node->right != nullptr)
+                    nodesQueue.push(node->right);
+                levelNodes--;
+            }
+            cout << endl;
+        }
+    }
+};
+
+void testAVL(){
+    AVLTree<int> tree;
+    tree.insert(10);
+    tree.insert(20);
+    tree.insert(30);
+    tree.insert(40);
+    tree.insert(50);
+    tree.insert(25);
+    tree.insert(5);
+    tree.insert(1);
+    tree.insert(2);
+    tree.insert(3);
+    tree.printLevelOrder();
+    tree.printPreorder();
+    cout<<"\n\nStergem 3:\n";
+    tree.erase(3);
+    tree.printLevelOrder();
+    cout<<endl;
+    tree.printPreorder();
+    cout<<endl;
+}
+
+void cautareAngajati(){
+    /*
+     Se vor citi de la tastatura n numarul de angajati,numele cautat, si apoi n nume de angajati.
+     Se va returna daca numele cautat se afla printre angajati.
+     */
+    int n;
+    string numeCautat;
+    cin>>n>>numeCautat;
+    AVLTree<string> angajati;
+    for(int i = 0; i < n; i++){
+        string nume;
+        cin>>nume;
+        angajati.insert(nume);
+    }
+    Node<string>* angajat = angajati.search(numeCautat);
+    if(angajat){
+        cout<<"Angajatul "<<numeCautat<<" a fost gasit!"<<endl;
+    }else{
+        cout<<"Angajatul "<<numeCautat<<" nu a fost gasit!"<<endl;
+    }
+}
+
+int main(){
+    testAVL();
+    return 0;
+}
