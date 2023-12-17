@@ -1,0 +1,255 @@
+#include <iostream>
+#include <queue>
+
+using namespace std;
+
+#define swap(a,b){T auxMove = a; a = b; b = auxMove;}
+
+template<typename T>
+class DynamicHeapTree;
+
+template<typename T>
+class Node{
+    T data;
+    Node<T> *left;
+    Node<T> *right;
+    int nrDescendents;
+
+    friend class DynamicHeapTree<T>;
+
+    void reorder(){
+        if(left && right){
+            //daca exista ambele frunze, mergem mai jos cu un nivel dupa numarul de descendenti
+            if(left->data > right->data){
+                //daca frunza stanga are valoarea mai mare, o interschimbam cu valoarea nodului curent
+                if(data < left->data){
+                    swap(data, left->data)
+                    //apelam recursiv reorder pentru a reface ordinea
+                    left->reorder();
+                }else{
+                    return;
+                }
+            }else{
+                //daca frunza dreapta are valoarea mai mare, o interschimbam cu valoarea nodului curent
+                if(data < right->data){
+                    swap(data, right->data)
+                    right->reorder();
+                }else{
+                    return;
+                }
+            }
+        }else if(left) {
+            //daca exista doar frunza stanga, o interschimbam cu valoarea nodului curent
+            if (data < left->data) {
+                swap(data, left->data)
+                left->reorder();
+            } else {
+                return;
+            }
+        }
+    }
+
+
+    T deleteLastLeaf(){
+        nrDescendents--;
+
+        if(left && !right){
+            //daca exista doar frunza stanga, o stergem si returnam valoarea
+            T value = left->data;
+            delete left;
+            left = nullptr;
+            return value;
+        }
+        else if(right){
+            if(right->nrDescendents == 0){
+                //daca exista doar frunza dreapta, o stergem si returnam valoarea
+                T value = right->data;
+                delete right;
+                right = nullptr;
+                return value;
+            }else{
+                //daca exista ambele frunze, mergem mai jos cu un nivel dupa numarul de descendenti
+                if(left->nrDescendents < right->nrDescendents){
+                    return right->deleteLastLeaf();
+                }else{
+                    return left->deleteLastLeaf();
+                }
+            }
+        }
+    }
+
+
+public:
+    explicit Node(T data):data(data),left(nullptr),right(nullptr),nrDescendents(0){}
+
+    ~Node(){
+        delete left;
+        delete right;
+    }
+
+    void push(T element){
+        if(element > data){
+            //daca elementul este mai mare decat valoarea nodului curent, il interschimbam cu valoarea nodului curent
+            swap(element, data)
+        }
+        nrDescendents++;
+
+        if(!left){
+            //daca nu exista frunza stanga, o adaugam
+            left = new Node<T>(element);
+            return;
+        }
+        if(!right){
+            //daca nu exista frunza dreapta, o adaugam
+            right = new Node<T>(element);
+            return;
+        }
+        //daca exista ambele frunze, mergem mai jos cu un nivel dupa numarul de descendenti
+        if(left->nrDescendents <= right->nrDescendents){
+            left->push(element);
+        }else{
+            right->push(element);
+        }
+    }
+
+
+    T pop(){
+        //returnam valoarea nodului curent si o inlocuim cu ultima frunza
+        T value = data;
+        data = deleteLastLeaf();
+        reorder();
+        return value;
+    }
+};
+
+template<typename T>
+class DynamicHeapTree {
+    Node<T> *root;
+public:
+    DynamicHeapTree():root(nullptr){}
+
+    ~DynamicHeapTree(){
+        delete root;
+    }
+
+    void push(T element){
+        if(!root){
+            root = new Node<T>(element);
+            return;
+        }
+        root->push(element);
+    }
+
+    T pop(){
+        if(root){
+            return root->pop();
+        }
+    }
+};
+
+template<typename T>
+class StaticHeapTree {
+    T *vec;
+    int size;//numarul de elemente din vector
+    int capacity;//numarul maxim de elemente din vector
+public:
+    StaticHeapTree():vec(nullptr),size(0),capacity(0){}
+    explicit StaticHeapTree(int d):vec(new T[d]),size(0),capacity(d){}
+
+    ~StaticHeapTree(){
+        delete[] vec;
+    }
+
+    int push(T element){
+        if(size == capacity){
+            //daca vectorul este plin, returnam -1
+            return -1;
+        }
+        size++;
+        vec[size-1] = element;
+
+        if(size > 1){
+            //daca vectorul are mai mult de un element, trebuie sa il ordonam
+            int id_son = size;
+            int id_parent = id_son/2;
+
+            while(id_parent){
+                if(vec[id_parent - 1] < vec[id_son - 1]){
+                    swap(vec[id_parent - 1], vec[id_son - 1])
+                }else{
+                    break;
+                }
+
+                id_son = id_parent;
+                id_parent = id_son/2;
+            }
+        }
+        return 0;
+    }
+
+    int pop(T &element){
+        if(size == 0){
+            //daca vectorul este gol, returnam -1
+            return -1;
+        }
+        size--;
+        element = vec[0];
+
+        if(size > 0){
+            vec[0] = vec[size];
+            if(size == 1){
+                //daca vectorul are un singur element, nu mai avem ce sa facem
+                return 0;
+            }
+
+            int id_parent = 1;
+            while(id_parent <= size/2){
+                //ordonam vectorul, mergand de la radacina la frunze
+
+                int id_sonL = 2*id_parent;
+                int id_sonR = 2*id_parent + 1;
+                int id;//id-ul frunzei cu valoarea mai mare
+
+                //daca exista doar frunza stanga, o comparam cu parintele
+                if(id_sonR > size){
+                    id = id_sonL;
+                }else{
+                    //daca exista ambele frunze, o comparam pe cea mai mare cu parintele
+                    id = vec[id_sonR - 1] > vec[id_sonL - 1] ? id_sonR : id_sonL;
+                }
+                //daca parintele este mai mic decat frunza, le schimbam locurile
+                if(vec[id_parent - 1] < vec[id - 1]) {
+                    swap(vec[id_parent - 1], vec[id - 1])
+                }
+                id_parent = id;
+            }
+        }
+        return 0;
+    }
+};
+
+int main(){
+    DynamicHeapTree<int> dTree;
+    StaticHeapTree<int> sTree(10);
+#define Psh(x) dTree.push(x); sTree.push(x);
+    Psh(90)
+    Psh(55)
+    Psh(70)
+    Psh(50)
+    Psh(25)
+    Psh(45)
+    Psh(60)
+    Psh(5)
+    Psh(10)
+    cout<< "Dynamic pop: ";
+    for(int i = 0; i < 4; i++){
+        cout << dTree.pop() << " ";
+    }
+    cout << "\nStatic pop: ";
+    for(int i = 0; i < 4; i++){
+        int x;
+        sTree.pop(x);
+        cout << x << " ";
+    }
+    return 0;
+}
