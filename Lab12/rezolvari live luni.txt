@@ -1,0 +1,243 @@
+#include <iostream>
+#include <queue>
+
+using namespace std;
+
+#define swap(a,b){T auxMove = a; a = b; b = auxMove;}
+
+template<typename T>
+class DynamicHeapTree;
+
+template<typename T>
+class Node{
+    T data;
+    Node<T> *left;
+    Node<T> *right;
+    int nrDescendents;
+
+    friend class DynamicHeapTree<T>;
+
+    void reorder(){
+        if(left && right){
+            if(left->data > right->data){
+                if(data < left->data){
+                    swap(data, left->data);
+                    left->reorder();
+                }else{
+                    return;
+                }
+            }else{
+                if(data < right->data){
+                    swap(data, right->data);
+                    right->reorder();
+                }else{
+                    return;
+                }
+            }
+        }else if(left) {
+            if (data < left->data) {
+                swap(data, left->data);
+                left->reorder();
+            } else {
+                return;
+            }
+        }
+    }
+
+    T deleteLastLeaf(){
+        nrDescendents--;
+
+        if(left && !right){
+            T val = left->data;
+            delete left;
+            return val;
+        }
+        else if(right){
+            if(right->nrDescendents == 0){
+                T val = right->data;
+                delete right;
+                return val;
+            }else{
+                if(left->nrDescendents < right->nrDescendents){
+                    return right->deleteLastLeaf();
+                }else{
+                    return left->deleteLastLeaf();
+                }
+            }
+        }
+    }
+
+public:
+    explicit Node(T data){
+        this->data = data;
+        left = right = nullptr;
+        nrDescendents = 0;
+    }
+
+    ~Node(){
+        delete left;
+        delete right;
+    }
+
+    void push(T element){
+        if(element > data){
+            swap(element, data);
+        }
+        nrDescendents++;
+
+        if(!left){
+            left = new Node(element);
+            return;
+        }
+        if(!right){
+            right = new Node(element);
+            return;
+        }
+        if(left->nrDescendents <= right->nrDescendents){
+            left->push(element);
+        }else{
+            right->push(element);
+        }
+    }
+
+    T pop(){
+        T best = data;
+        data = deleteLastLeaf();
+        reorder();
+        return best;
+    }
+};
+
+template<typename T>
+class DynamicHeapTree {
+    Node<T> *root;
+public:
+    DynamicHeapTree():root(nullptr){}
+
+    ~DynamicHeapTree(){
+        delete root;
+    }
+
+    void push(T element){
+        if(root){
+            root->push(element);
+        }else{
+            root = new Node(element);
+        }
+    }
+
+    T pop(){
+        if(root){
+            return root->pop();
+        }
+    }
+};
+
+template<typename T>
+class StaticHeapTree {
+    T *vec;
+    int size;
+    int capacity;
+
+public:
+    StaticHeapTree(){
+        vec = nullptr;
+        size = 0;
+        capacity = 0;
+    }
+
+    explicit StaticHeapTree(int d){
+        size = 0;
+        capacity = d;
+        vec = new T[d];
+    }
+
+    ~StaticHeapTree(){
+        delete vec;
+    }
+
+    int push(T element){
+        if(size == capacity){
+            return -1;
+        }
+        size++;
+        vec[size-1] = element;
+
+        if(size > 1){
+            int id_son = size;
+            int id_parent = id_son/2;
+
+            while(id_parent){
+                if(vec[id_parent-1] < vec[id_son-1]){
+                    swap(vec[id_parent-1], vec[id_son-1])
+                }else{
+                    break;
+                }
+                id_son = id_parent;
+                id_parent = id_son/2;
+            }
+        }
+        return 0;
+    }
+
+    int pop(T &element) {
+        if(size == 0){
+            return -1;
+        }
+        size--;
+        element = vec[0];
+
+        if(size > 0){
+            vec[0] = vec[size];
+            if(size == 1){
+                return 0;
+            }
+
+            int id_parent = 1;
+            while(id_parent < size/2){
+                int id_sonL = id_parent*2;
+                int id_sonR = id_parent*2 + 1;
+                int id;
+
+                if(id_sonR > size){
+                    id = id_sonL;
+                }else{
+                    id = vec[id_sonR - 1] > vec[id_sonL - 1]? id_sonR : id_sonL;
+                }
+
+                if(vec[id_parent - 1] < vec[id - 1]){
+                    swap(vec[id_parent - 1], vec[id - 1]);
+                }
+                id_parent = id;
+            }
+
+        }
+        return 0;
+    }
+};
+
+int main(){
+    DynamicHeapTree<int> dTree;
+    StaticHeapTree<int> sTree(10);
+#define Psh(x) dTree.push(x); sTree.push(x);
+    Psh(90)
+    Psh(55)
+    Psh(70)
+    Psh(50)
+    Psh(25)
+    Psh(45)
+    Psh(60)
+    Psh(5)
+    Psh(10)
+    cout<< "Dynamic pop: ";
+    for(int i = 0; i < 4; i++){
+        cout << dTree.pop() << " ";
+    }
+    cout << "\nStatic pop: ";
+    for(int i = 0; i < 4; i++){
+        int x;
+        sTree.pop(x);
+        cout << x << " ";
+    }
+    return 0;
+}
