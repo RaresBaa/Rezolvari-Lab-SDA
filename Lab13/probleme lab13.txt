@@ -1,0 +1,352 @@
+#include <iostream>
+
+using namespace std;
+
+#define swap(a, b) {T temp = a; a = b; b = temp;}
+
+/*
+ * Exemplu problema care foloseste o sortare:
+ *
+ * Se citeste n, urmat de n perechi de nume si medie pentru fiecare student.
+ * Sa se afiseze numele studentilor in ordinea descrescatoare a mediilor,
+ * daca doi studenti au aceeasi medie, sa se afiseze in ordinea alfabetica a numelor.
+ */
+
+//clasa folosita pentru heap sort
+template<typename T>
+class StaticHeapTree {
+    T *vec;
+    int size;//numarul de elemente din vector
+    int capacity;//numarul maxim de elemente din vector
+public:
+    StaticHeapTree():vec(nullptr),size(0),capacity(0){}
+    explicit StaticHeapTree(int d):vec(new T[d]),size(0),capacity(d){}
+
+    ~StaticHeapTree(){
+        delete[] vec;
+    }
+
+    int push(T element){
+        if(size == capacity){
+            //daca vectorul este plin, returnam -1
+            return -1;
+        }
+        size++;
+        vec[size-1] = element;
+
+        if(size > 1){
+            //daca vectorul are mai mult de un element, trebuie sa il ordonam
+            int id_son = size;
+            int id_parent = id_son/2;
+
+            while(id_parent){
+                if(vec[id_parent - 1] < vec[id_son - 1]){
+                    swap(vec[id_parent - 1], vec[id_son - 1])
+                }else{
+                    break;
+                }
+
+                id_son = id_parent;
+                id_parent = id_son/2;
+            }
+        }
+        return 0;
+    }
+
+    int pop(T &element){
+        if(size == 0){
+            //daca vectorul este gol, returnam -1
+            return -1;
+        }
+        size--;
+        element = vec[0];
+
+        if(size > 0){
+            vec[0] = vec[size];
+            if(size == 1){
+                //daca vectorul are un singur element, nu mai avem ce sa facem
+                return 0;
+            }
+
+            int id_parent = 1;
+            while(id_parent <= size/2){
+                //ordonam vectorul, mergand de la radacina la frunze
+
+                int id_sonL = 2*id_parent;
+                int id_sonR = 2*id_parent + 1;
+                int id;//id-ul frunzei cu valoarea mai mare
+
+                //daca exista doar frunza stanga, o comparam cu parintele
+                if(id_sonR > size){
+                    id = id_sonL;
+                }else{
+                    //daca exista ambele frunze, o comparam pe cea mai mare cu parintele
+                    id = vec[id_sonR - 1] > vec[id_sonL - 1] ? id_sonR : id_sonL;
+                }
+                //daca parintele este mai mic decat frunza, le schimbam locurile
+                if(vec[id_parent - 1] < vec[id - 1]) {
+                    swap(vec[id_parent - 1], vec[id - 1])
+                }
+                id_parent = id;
+            }
+        }
+        return 0;
+    }
+};
+
+template<typename T>
+void directSelectionSort(T *vec, int size){
+    int min;
+    for(int i = 0; i < size - 1; i++){
+        //punem cea mai mica valoare pe pozitia i si avansam la urmatoarea pozitie
+        min = i;
+        for(int j = i + 1; j < size; j++){
+            if(vec[j] < vec[min]){
+                min = j;
+            }
+        }
+        swap(vec[i], vec[min]);
+    }
+}
+
+template<typename T>
+void heapSort(T *vec, int size){
+    //construim un heap din vector si apoi scoatem elementele din heap
+    StaticHeapTree<T> heap(size);
+    for(int i = 0; i < size; i++){
+        heap.push(vec[i]);
+    }
+    for(int i = 0; i < size; i++){
+        heap.pop(vec[i]);
+    }
+}
+
+template<typename T>
+void directInsertionSort(T *vec, int size){
+    //parcurgem de la dreapta la stanga si inseram pe pozitia corecta fiecare element
+    T temp;
+    for(int i = 1; i < size; i++){
+        temp = vec[i];
+        int j = i - 1;
+        while(j >= 0 && vec[j] > temp){
+            vec[j + 1] = vec[j];
+            j--;
+        }
+        vec[j + 1] = temp;
+    }
+}
+
+
+template<typename T>
+void binaryInsertionSort(T *vec, int size){
+    //folosim cautarea binara, partea stanga ramane ordonata iar in dreapta se insereaza elementele
+    T temp;
+    int start, end, mid;
+
+    for(int i = 1; i < size; i++){
+        temp = vec[i];
+        start = 0;
+        end = i - 1;
+        mid = (start + end)/2;
+        while(start <= end){
+            if(vec[mid] > temp){
+                end = mid - 1;
+            }else{
+                start = mid + 1;
+            }
+            mid = (start + end)/2;
+        }
+
+        for(int j = i - 1; j >= start; j--){
+            vec[j+1] = vec[j];
+        }
+        vec[start] = temp;
+    }
+}
+
+template<typename T>
+void bubbleSort(T *vec, int size){
+    //parcurgem vectorul si interschimbam elementele vecine daca nu sunt in ordine
+    bool sorted = false;
+    while(!sorted){
+        sorted = true;
+        for(int i = 0; i < size - 1; i++){
+            if(vec[i] > vec[i+1]){
+                swap(vec[i], vec[i+1]);
+                sorted = false;
+            }
+        }
+    }
+}
+
+template<typename T>
+void shakeSort(T *vec, int size){
+    //parcurgem vectorul de la stanga la dreapta si apoi de la dreapta la stanga
+    bool sorted = false;
+    int left = 0, right = size - 1, last = size - 1;
+
+    while(!sorted && left <= right){
+        sorted = true;
+
+        for(int i = right; i > left; --i){
+            if(vec[i] < vec[i - 1]){
+                swap(vec[i], vec[i - 1]);
+                sorted = false;
+                last = i;
+            }
+        }
+        left = last;
+
+        for(int i = left; i < right; ++i){
+            if(vec[i] > vec[i + 1]){
+                swap(vec[i], vec[i + 1]);
+                sorted = false;
+                last = i;
+            }
+        }
+        right = last;
+    }
+}
+
+
+template<typename T>
+void shellSort(T *vec, int size){
+    //bubble sort cu spatii intre elemente, spatiul scade la fiecare iteratie
+    T temp;
+    for(int gap = size/2; gap>0; gap/=2){
+        for(int i = gap; i < size; i++){
+            for(int j = i - gap; j>=0; j-=gap){
+                if(vec[j+gap] < vec[j]){
+                    swap(vec[j+gap], vec[j]);
+                }else{
+                    break;
+                }
+            }
+        }
+    }
+}
+
+template<typename T>
+void quickSort(T *vec, int left, int right) {
+    //impartim vectorul in doua parti si sortam recursiv fiecare parte
+    if (left < right) {
+        T pivot = vec[(left + right) / 2];
+        int i = left, j = right;
+        while (i <= j) {
+            while (vec[i] < pivot) {
+                i++;
+            }
+            while (vec[j] > pivot) {
+                j--;
+            }
+            if (i <= j) {
+                swap(vec[i], vec[j]);
+                i++;
+                j--;
+            }
+        }
+        quickSort(vec, left, j);
+        quickSort(vec, i, right);
+    }
+}
+
+template<typename T>
+void mergeSort(T *vec, int size){
+    //impartim vectorul in doua parti si sortam recursiv fiecare parte
+    if(size <= 1){
+        return;
+    }
+
+    int left_size = size / 2;
+    int right_size = size - left_size;
+
+    // Apelam recursiv functia pentru cele doua jumatati
+    mergeSort(vec, left_size);
+    mergeSort(&vec[left_size], right_size);
+
+    // Cream un vector temporar pentru a stoca elementele sortate
+    T *temp = new T[size];
+    int i = 0, indexL = 0, indexR = left_size;
+    // Combinam cele doua jumatati sortate
+    while(indexL < left_size && indexR < size){
+        if(vec[indexL] < vec[indexR]){
+            temp[i++] = vec[indexL++];
+        } else {
+            temp[i++] = vec[indexR++];
+        }
+    }
+
+    // Copiem elementele ramase din prima jumatate
+    while(indexL < left_size){
+        temp[i++] = vec[indexL++];
+    }
+
+    // Copiem elementele ramase din a doua jumatate
+    while(indexR < size){
+        temp[i++] = vec[indexR++];
+    }
+
+    // Copiem elementele sortate inapoi in vectorul initial
+    for(int i = 0; i < size; i++){
+        vec[i] = temp[i];
+    }
+
+    delete[] temp;
+}
+
+
+int main(){
+    int vec[] = {1, 4, 7, 34, 26, 5, 3, 11, 9, 10};
+    int size = sizeof(vec) / sizeof(vec[0]);
+    cout << "Nesortat:\n\t";
+    for (int i = 0; i < size; i++) {
+        cout << vec[i] << " ";
+    }
+    for(int j = 0; j < 9; j++) {
+        int vec[] = {1, 4, 7, 34, 26, 5, 3, 11, 9, 10};
+
+        switch (j) {
+            case 0:
+                cout << "\nDirect Selection Sort:";
+                directSelectionSort(vec, size);
+                break;
+            case 1:
+                cout << "\nHeap Sort:";
+                heapSort(vec, size);
+                break;
+            case 2:
+                cout << "\nDirect Insertion Sort:";
+                directInsertionSort(vec, size);
+                break;
+            case 3:
+                cout << "\nBinary Insertion Sort:";
+                binaryInsertionSort(vec, size);
+                break;
+            case 4:
+                cout << "\nBubble Sort:";
+                bubbleSort(vec, size);
+                break;
+            case 5:
+                cout << "\nShake Sort:";
+                shakeSort(vec, size);
+                break;
+            case 6:
+                cout << "\nShell Sort:";
+                shellSort(vec, size);
+                break;
+            case 7:
+                cout << "\nQuick Sort:";
+                quickSort(vec, 0, size);
+                break;
+            case 8:
+                cout << "\nMerge Sort:";
+                mergeSort(vec, size);
+                break;
+        }
+        cout << "\n\t";
+        for (int i = 0; i < size; i++) {
+            cout << vec[i] << " ";
+        }
+    }
+    return 0;
+}
